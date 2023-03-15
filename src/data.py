@@ -1,21 +1,45 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
+# Authors: Dylan
+# This source code is edited based on the FiD's code.
+# The FiD's codes are made for standard QA tasks.
+# And this code is made for Conversational QA.
+# 
+## Copyright (c) Facebook, Inc. and its affiliates.
+## All rights reserved.
+##
+## This source code is licensed under the license found in the
+## LICENSE file in the root directory of this source tree.
 
 import torch
 import random
 import json
 import numpy as np
+import pandas as pd
+from datasets import load_dataset
 
-class Dataset(torch.utils.data.Dataset):
+def load_clariq(data_path=None, n_eval=None):
+    # ds = load_dataset('csv', data_files=data_path, delimiter='\t')
+    # if n_eval:
+    #     from datasets import disable_caching
+    #     disable_caching()
+    #     temp = ds['train'].filter(lambda ex: ex['clarification_need'] == 4)
+    #     ds['eval'] = temp.select(random.sample(range(len(temp), n_eval)
+    df = pd.read_csv(data_path, delimiter='\t')
+    return df.to_dict('index')
+    
+class Dataset:
+    """
+    This dataset object design is Different logics from FiD's.
+    Loading raw data via huggingface dataset API. 
+    And move the "prefix adding" process to `collator`
+    """
     def __init__(self,
                  data,
-                 n_context=None,
-                 question_prefix='question:',
-                 title_prefix='title:',
-                 passage_prefix='context:'):
+                 n_context=None):
+                 # question_prefix='question:',
+                 # title_prefix='title:',
+                 # passage_prefix='context:'):
+
+        # load dataset
         self.data = data
         self.n_context = n_context
         self.question_prefix = question_prefix
@@ -23,6 +47,14 @@ class Dataset(torch.utils.data.Dataset):
         self.passage_prefix = passage_prefix
         self.sort_data()
 
+    def load_clariq(self):
+        """Load ClariQ dataset, including 
+            - initial_request topic_desc      
+            - clarification_need      
+            - facet_desc      
+            - question        
+            - answer
+        """
     def __len__(self):
         return len(self.data)
 
@@ -119,30 +151,6 @@ class Collator(object):
 
         return (index, target_ids, target_mask, passage_ids, passage_masks)
 
-def load_data(data_path=None, global_rank=-1, world_size=-1):
-    assert data_path
-    if data_path.endswith('.jsonl'):
-        data = open(data_path, 'r')
-    elif data_path.endswith('.json'):
-        with open(data_path, 'r') as fin:
-            data = json.load(fin)
-    examples = []
-    for k, example in enumerate(data):
-        if global_rank > -1 and not k%world_size==global_rank:
-            continue
-        if data_path is not None and data_path.endswith('.jsonl'):
-            example = json.loads(example)
-        if not 'id' in example:
-            example['id'] = k
-        for c in example['ctxs']:
-            if not 'score' in c:
-                c['score'] = 1.0 / (k + 1)
-        examples.append(example)
-    ## egrave: is this needed?
-    if data_path is not None and data_path.endswith('.jsonl'):
-        data.close()
-
-    return examples
 
 class RetrieverCollator(object):
     def __init__(self, tokenizer, passage_maxlength=200, question_maxlength=40):
