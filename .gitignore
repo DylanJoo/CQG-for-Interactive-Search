@@ -3,6 +3,5 @@ temp/*
 # data
 data/clariq/*
 data/archived/*
-data/clariq_provenances.jsonl
-
+data/*
 !data/clariq/train.tsv
