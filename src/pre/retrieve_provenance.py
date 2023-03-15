@@ -1,13 +1,18 @@
-import torch
-import random
 import json
-import numpy as np
+import argparse
 import pandas as pd
+from tqdm import tqdm
 from datasets import load_dataset
+from pyserini.search.lucene import LuceneSearcher
 
 def sparse_retrieve(queries, args):
-    """ 
-    This step can be changed to any other text ranking models 
+    """ This step can be changed to any other text ranking models 
+
+    Returns
+    -------
+    serp: `dict`
+        Query and the key, and the retrieved result is the value.
+        Result is a list of two lists: docid list and their scores.
     """
     # bm25 search
     searcher = LuceneSearcher(args.index_dir)
@@ -17,7 +22,8 @@ def sparse_retrieve(queries, args):
     serp = {}
     for q in tqdm(queries):
         hits = searcher.search(q, k=args.k)
-        serp[q] = [(hit.docid, hit.score) for hit in hits]
+        results = [(hit.docid, hit.score) for hit in hits]
+        serp[q] = list(map(list, zip(*results)))
 
     return serp
     
@@ -36,22 +42,25 @@ if __name__ == '__main__':
 
     # clairq
     clariq_df = pd.read_csv(args.clariq, delimiter='\t')
+    clariq_df.dropna(inplace=True) # 610 instances have no cq and ca
     queries = clariq_df['initial_request'].unique().tolist() + \
-            clariq_df['facet_desc'].unique().tolist()
+            clariq_df['question'].unique().tolist()
 
     # search
     clariq_serp = sparse_retrieve(queries, args)
 
     fout = open(args.output, 'w') 
     # add serp to clariq dataset
-    for clariq_dict in clariq_df.to_dict('index'):
-        fout.write({
+    for i,clariq_dict in clariq_df.to_dict('index').items():
+        fout.write(json.dumps({
             "question": clariq_dict['initial_request'],
-            "facet": clariq_dict['facet_desc'],
+            "c_need": clariq_dict['clarification_need'],
             "c_question": clariq_dict['question'],
             "c_answer": clariq_dict['answer'],
             "q_serp": clariq_serp[clariq_dict['initial_request']],
-            "f_serp": clariq_serp[clariq_dict['facet_desc']],
-        }+'\n', esure_ascii=True)
+            "cq_serp": clariq_serp[clariq_dict['question']],
+        }, ensure_ascii=False)+'\n')
+            # "facet": clariq_dict['facet_desc'],
+            # "f_serp": clariq_serp[clariq_dict['facet_desc']],
 
     fout.close()
