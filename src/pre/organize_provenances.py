@@ -1,3 +1,4 @@
+import re
 import math
 import json
 import argparse
@@ -31,14 +32,17 @@ def overlapped_provenances(plist_q, plist_cq, N):
     # the overlapped
     serp = [docid for docid in plist_q if docid in plist_cq]
     doc_q = [docid for docid in plist_q if docid not in serp]
-    doc_cq = [docid for docid in plist_q if docid not in serp]
+    doc_cq = [docid for docid in plist_cq if docid not in serp]
+
     n = len(serp)
     if n < N:
-        offset = math.ceil(N-n) // 2
-        serp += doc_q[:offset]
+        offset = math.ceil((N-n)/2)
         serp += doc_cq[:offset]
+        serp += doc_q[:offset]
 
-    return serp
+    # [NOTE] Move the randomly sampled orders to collator
+
+    return serp[:N]
 
 
 if __name__ == '__main__':
@@ -67,17 +71,10 @@ if __name__ == '__main__':
             fout.write(json.dumps({
                 "question": data['question'],
                 "c_question": data['c_question'],
-                "provenance": [collections[docid] for docid in serp],
+                "titles": [re.sub(r"\d+", "", docid) for docid in serp],
+                "provenances": [collections[docid] for docid in serp],
                 "c_need": data['c_need'],
             }, ensure_ascii=False)+'\n')
-            # for rank, docid in enumerate(serp):
-            #     fout.write(json.dumps({
-            #         "question": data['question'],
-            #         "c_question": data['c_question'],
-            #         "provenance": collections[docid],
-            #         "c_need": data['c_need'],
-            #         "provenance_rank": rank
-            #     }, ensure_ascii=False)+'\n')
 
 
 
