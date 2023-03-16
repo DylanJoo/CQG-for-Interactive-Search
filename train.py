@@ -48,7 +48,7 @@ class OurDataArguments:
     validation_split_percentage: Optional[int] = field(default=5)
     preprocessing_num_workers: Optional[int] = field(default=None)
     # Customized arguments
-    train_file: Optional[str] = field(default='data/train_cqg_v0.jsonl')
+    train_file: Optional[str] = field(default='data/train_cqg_v0.samplejsonl')
     max_length: int = field(default=256)
     n_contexts: int = field(default=10)
 

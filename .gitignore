@@ -10,4 +10,5 @@ data/clariq/*
 # data
 data/archived/*
 data/*jsonl
+!data/train_cqg_v0.sample.jsonl
 
