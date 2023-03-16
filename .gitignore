@@ -1,4 +1,7 @@
 temp/*
+logs/*
+*swp
+src/__pycache__/*
 
 # raw data
 data/clariq/*

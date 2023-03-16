@@ -34,8 +34,11 @@ class FiDT5(transformers.T5ForConditionalGeneration):
     def forward(self, input_ids=None, attention_mask=None, **kwargs):
         if input_ids != None:
             # inputs might have already be resized in the generate method
+            print(input_ids.dim())
+            print(input_ids.shape())
             if input_ids.dim() == 3:
                 self.encoder.n_passages = input_ids.size(1)
+                print(input_ids.size(1))
             input_ids = input_ids.view(input_ids.size(0), -1)
         if attention_mask != None:
             attention_mask = attention_mask.view(attention_mask.size(0), -1)
