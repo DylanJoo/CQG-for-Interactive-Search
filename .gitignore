@@ -1,7 +1,10 @@
 temp/*
 
-# data
+# raw data
 data/clariq/*
-data/archived/*
-data/*
 !data/clariq/train.tsv
+
+# data
+data/archived/*
+data/*jsonl
+
