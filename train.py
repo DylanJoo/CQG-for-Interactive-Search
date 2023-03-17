@@ -68,6 +68,8 @@ class OurTrainingArguments(TrainingArguments):
     per_device_eval_batch_size: int = field(default=2)
     logging_dir: Optional[str] = field(default='./logs')
     resume_from_checkpoint: Optional[str] = field(default=None)
+    dataloader_num_workers: int = field(default=0)
+    dataloader_pin_memory: bool = field(default=False)
     # Customized arguments
     remove_unused_columns: bool = field(default=False)
 
@@ -96,8 +98,8 @@ def main():
     dataset = clariq_cqg(data_args.train_file, model_args.n_context)
     from datasets import disable_caching
     disable_caching()
-    temp = dataset['train'].filter(lambda x: x['c_need']==4)
-    dataset['eval'] = temp.select(random.sample(range(len(temp)), 100))
+    temp = dataset['train'].filter(lambda x: x['c_need']<=4)
+    dataset['eval'] = temp.select(random.sample(range(len(temp)), 10))
 
     ## data collator
     datacollator = DataCollatorForCQG(
