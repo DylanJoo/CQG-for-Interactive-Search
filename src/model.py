@@ -41,6 +41,7 @@ class FiDT5(transformers.T5ForConditionalGeneration):
             if input_ids.dim() == 3:
                 self.encoder.n_passages = input_ids.size(1)
 
+        attention_mask = attention_mask.view(attention_mask.size(0), -1)
         return super().forward(
             input_ids=input_ids,
             attention_mask=attention_mask,
