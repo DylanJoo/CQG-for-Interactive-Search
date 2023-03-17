@@ -158,7 +158,7 @@ class EncoderWrapper(torch.nn.Module):
         input_ids = input_ids.view(bsz*self.n_passages, passage_length)
         attention_mask_pooled = attention_mask.view(bsz*self.n_passages, passage_length)
         outputs = self.encoder(input_ids, attention_mask_pooled, **kwargs)
-        outputs['last_hidden_states'] = outputs['last_hidden_states'].view(
+        outputs['last_hidden_state'] = outputs['last_hidden_state'].view(
                 bsz, self.n_passages*passage_length, -1
         )
         return outputs
