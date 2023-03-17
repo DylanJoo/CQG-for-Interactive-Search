@@ -73,12 +73,12 @@ class DataCollatorForCQG:
         )
 
         ### adjustments
-        inputs.input_ids = inputs.input_ids.view(
+        inputs['input_ids'] = inputs['input_ids'].view(
                 -1, self.n_contexts, inputs.input_ids.size(-1)
         )
-        # inputs.attention_mask = inputs.attention_mask.view(
-        #         -1, self.n_contexts, inputs.attention_mask.size(-1)
-        # )
+        inputs['attention_mask'] = inputs['attention_mask'].view(
+                -1, self.n_contexts, inputs.attention_mask.size(-1)
+        )
 
         ## labeling if needed.
         if self.is_train:
