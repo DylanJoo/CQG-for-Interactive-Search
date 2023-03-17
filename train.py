@@ -36,7 +36,7 @@ class OurModelArguments:
     use_checkpoint: bool = field(default=False, metadata={
         "help": "use checkpoint in the encoder."
     })
-    n_context: Optional[int] = field(default=2, metadata={
+    n_context: Optional[int] = field(default=3, metadata={
         "help": "the considered context (title and passage)", 
     })
 
@@ -64,8 +64,8 @@ class OurTrainingArguments(TrainingArguments):
     save_steps: int = field(default=5000)
     eval_steps: int = field(default=2500)
     evaluation_strategy: Optional[str] = field(default='no')
-    per_device_train_batch_size: int = field(default=1)
-    per_device_eval_batch_size: int = field(default=1)
+    per_device_train_batch_size: int = field(default=2)
+    per_device_eval_batch_size: int = field(default=2)
     logging_dir: Optional[str] = field(default='./logs')
     resume_from_checkpoint: Optional[str] = field(default=None)
     # Customized arguments

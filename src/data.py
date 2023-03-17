@@ -61,7 +61,7 @@ class DataCollatorForCQG:
         texts = []
         for ex in features:
             q = ex['question']
-            for t, ctx in zip(ex['titles'], ex['provenances']):
+            for t, ctx in zip(ex['titles'][:self.n_contexts], ex['provenances'][:self.n_contexts]):
                 texts.append(f"question: {q} title: {t} context: {ctx}")
 
         inputs = self.tokenizer.batch_encode_plus(
@@ -76,9 +76,9 @@ class DataCollatorForCQG:
         inputs.input_ids = inputs.input_ids.view(
                 -1, self.n_contexts, inputs.input_ids.size(-1)
         )
-        inputs.attention_mask = inputs.attention_mask.view(
-                -1, self.n_contexts, inputs.attention_mask.size(-1)
-        )
+        # inputs.attention_mask = inputs.attention_mask.view(
+        #         -1, self.n_contexts, inputs.attention_mask.size(-1)
+        # )
 
         ## labeling if needed.
         if self.is_train:
