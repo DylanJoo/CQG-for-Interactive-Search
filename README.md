@@ -46,3 +46,11 @@ python3 tools/retrieve_provenance.py \
     --b 0.4
 ```
 
+## FiD-CQG: Corpus-aware clarification question generation
+Fine-tune the FiD-T5 model with synthetic ClariQ-SERP
+
+```
+python3 train_cqg.py \
+  
+```
+

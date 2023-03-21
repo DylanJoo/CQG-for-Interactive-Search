@@ -36,7 +36,7 @@ class OurModelArguments:
     use_checkpoint: bool = field(default=False, metadata={
         "help": "use checkpoint in the encoder."
     })
-    n_context: Optional[int] = field(default=3, metadata={
+    n_contexts: Optional[int] = field(default=3, metadata={
         "help": "the considered context (title and passage)", 
     })
 
@@ -50,12 +50,11 @@ class OurDataArguments:
     # Customized arguments
     train_file: Optional[str] = field(default='data/train_cqg_v0.samplejsonl')
     max_length: int = field(default=256)
-    n_contexts: int = field(default=10)
 
 @dataclass
 class OurTrainingArguments(TrainingArguments):
     # Huggingface's original arguments. 
-    output_dir: str = field(default='./temp')
+    output_dir: str = field(default='./fidcqg')
     seed: int = field(default=42)
     data_seed: int = field(default=None)
     do_train: bool = field(default=False)
@@ -95,7 +94,7 @@ def main():
     model.set_checkpoint(model_args.use_checkpoint)
 
     ## dataset 
-    dataset = clariq_cqg(data_args.train_file, model_args.n_context)
+    dataset = clariq_cqg(data_args.train_file, model_args.n_contexts)
     from datasets import disable_caching
     disable_caching()
     temp = dataset['train'].filter(lambda x: x['c_need']<=4)
@@ -108,7 +107,7 @@ def main():
             max_length=data_args.max_length,
             return_tensors='pt',
             is_train=True,
-            n_contexts=data_args.n_contexts
+            n_contexts=model_args.n_contexts
     )
 
     ## Trainer
@@ -116,7 +115,7 @@ def main():
             model=model, 
             args=training_args,
             train_dataset=dataset['train'],
-            eval_dataset=dataset['eval'],
+            eval_dataset=dataset['eval'] if training_args.do_eval else None,
             data_collator=datacollator
     )
     
