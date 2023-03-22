@@ -5,6 +5,7 @@ src/__pycache__/*
 removeme*
 
 # raw data
+data/canard/*
 data/clariq/*
 !data/clariq/train.tsv
 

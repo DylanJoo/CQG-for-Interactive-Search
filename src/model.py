@@ -12,7 +12,7 @@ from transformers import PreTrainedModel
 from torch import nn
 from torch.nn import CrossEntropyLoss
 import numpy as np
-from src.revised import cross_attention_forward
+from model_revise import cross_attention_forward
 
 class FiDT5(transformers.T5ForConditionalGeneration):
     def __init__(self, config):

@@ -12,10 +12,12 @@ Entire process includes
 ## Prerequisite
 There are some data and pacakge you need to install.
 
-### Dataset
-```
+### Datasets
 Download the ClairQ and CANARD dataset.  The files have already stored in [data](data/).
-Check the original repo [(ClarQ)](#) and [(CANARD)](#) for detail.
+Check the original page [(ClarQ)](https://github.com/aliannejadi/ClariQ) and [(CANARD)](https://sites.google.com/view/qanta/projects/canard) for detail.
+```
+wget https://obj.umiacs.umd.edu/elgohary/CANARD_Release.zip
+unzip CANARD_Release.zip 
 ```
 
 ### Packages
@@ -44,8 +46,8 @@ python3 -m pyserini.index.lucene \
 ### Construct provenance aka SERP (wiki passage excerpts) for each questions
 Search from the corpus and retrieve top-K passages via BM25 search.
 ```
-# Run `construct_clariq_provenanc.sh`
-python3 tools/retrieve_provenance.py \
+# Run `construct_provenance_clariq.sh`
+python3 src/pre/retrieve_passages.py \
     --clariq data/clariq/train.tsv \
     --output <output file> \
     --index_dir <directory of indexes> \
@@ -54,12 +56,24 @@ python3 tools/retrieve_provenance.py \
     --b 0.4
 ```
 
-### Fine-tuning FiD-CQG: Corpus-aware clarification question generation
+Then, select N passages and prepare the CQG inputs. This data is the training data for FiD-CQG.
+```
+# Run `construct_provenance_clariq.sh`
+python3 src/pre/organize_provenances.py \
+    --clariq data/clariq/train.tsv \
+    --output <output file> \
+    --index_dir <directory of indexes> \
+    --k 100 \
+    --k1 0.9 \
+    --b 0.4
+```
+
+## Fine-tune FiD-CQG: Corpus-aware clarification question generation
 Fine-tune the FiD-T5 model with synthetic ClariQ-SERP.
 I use the default training setups, you can also find more detail in `src/train_fidcqg.py` for detail.
 ```
 # Run `train_fidcqg.py` 
-python3 train_fidcqg.py \
+python3 src/train_fidcqg.py \
     --model_name_or_path t5-small \
     --n_contexts 10 \
     --output_dir ./fidcqg \
@@ -76,4 +90,25 @@ python3 train_fidcqg.py \
     --dataloader_pin_memory false \
     --remove_unused_columns false
 ```
+
+## End-to-end Training data augmentation: generate clarification questions
+
+### Retrieve provenances (wiki passage excerpts) for each ConvQA's questions
+Search from the corpus and retrieve top-K passages via BM25 search.
+Thereare several settings that can adopt for this purpose.
+
 ### Inference FiD-CQG with CANARD queries: Generate clarification questions
+Run text generation script `inference_fidcqg.py` with the fine-tuned checkpoint as our default settings.
+This script will generate the corresponding clarification questions.
+Follow this `jsonl` data format 
+```
+# Run `inference_fidcqg.py` 
+python3 src/inference_fidcqg.py \
+    --jsonl_file <input jsonl file> \
+    --output_file <output jsonl file> \
+    --used_checkpoint ./fidcqg/checkpoint-10000/ \
+    --calculate_crossattention \
+    --n_contexts 10 \
+    --max_length 50 \
+    --device 'cuda' \
+```

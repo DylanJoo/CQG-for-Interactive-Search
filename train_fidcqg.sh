@@ -1,4 +1,4 @@
-python3 train_fidcqg.py \
+python3 src/train_fidcqg.py \
     --model_name_or_path t5-small \
     --n_contexts 10 \
     --output_dir ./fidcqg \
