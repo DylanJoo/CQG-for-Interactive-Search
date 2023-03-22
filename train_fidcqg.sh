@@ -1,8 +1,8 @@
-python3 train_cqg.py \
+python3 train_fidcqg.py \
     --model_name_or_path t5-small \
-    --n_contexts 2 \
+    --n_contexts 10 \
     --output_dir ./fidcqg \
-    --train_file data/train_cqg_v0.sample.jsonl \
+    --train_file data/train_cqg_v0.sample.train.jsonl \
     --per_device_train_batch_size 2 \
     --per_device_eval_batch_size 2 \
     --max_length 256 \

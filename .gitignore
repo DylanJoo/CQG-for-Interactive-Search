@@ -2,6 +2,7 @@ temp/*
 logs/*
 *swp
 src/__pycache__/*
+removeme*
 
 # raw data
 data/clariq/*
@@ -10,7 +11,9 @@ data/clariq/*
 # data
 data/archived/*
 data/*jsonl
-!data/train_cqg_v0.sample.jsonl
+!data/train_cqg_v0.sample.train.jsonl
+!data/train_cqg_v0.sample.eval.jsonl
+
 
 # checkpoints
 fidcqg/

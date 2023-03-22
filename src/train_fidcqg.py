@@ -1,6 +1,5 @@
 import random
 import sys
-import multiprocessing
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -13,9 +12,9 @@ from transformers import (
     GenerationConfig
 )
 from transformers import T5ForConditionalGeneration
-from src.model import FiDT5
-from src.data import clariq_cqg
-from src.data import DataCollatorForCQG
+from model import FiDT5
+from data import clariq_cqg
+from data import DataCollatorForCQG
 
 import os
 os.environ["WANDB_DISABLED"] = "true"
@@ -45,10 +44,11 @@ class OurDataArguments:
     # Huggingface's original arguments. 
     dataset_config_name: Optional[str] = field(default=None)
     overwrite_cache: bool = field(default=False)
-    validation_split_percentage: Optional[int] = field(default=5)
+    validation_split_percentage: Optional[int] = field(default=0)
     preprocessing_num_workers: Optional[int] = field(default=None)
     # Customized arguments
-    train_file: Optional[str] = field(default='data/train_cqg_v0.samplejsonl')
+    train_file: Optional[str] = field(default='data/train_cqg_v0.sample.train.jsonl')
+    eval_file: Optional[str] = field(default='data/train_cqg_v0.sample.eval.jsonl')
     max_length: int = field(default=256)
 
 @dataclass
@@ -97,8 +97,13 @@ def main():
     dataset = clariq_cqg(data_args.train_file, model_args.n_contexts)
     from datasets import disable_caching
     disable_caching()
-    temp = dataset['train'].filter(lambda x: x['c_need']<=4)
-    dataset['eval'] = temp.select(random.sample(range(len(temp)), 10))
+    if training_args.do_eval and data_args.eval_file is None:
+        temp = dataset['train'].filter(lambda x: x['c_need']==4)
+        dataset['eval'] = temp.select(random.sample(range(len(temp)), 100))
+    else:
+        dataset['eval'] = clariq_cqg(
+                data_args.eval_file, model_args.n_contexts
+        )
 
     ## data collator
     datacollator = DataCollatorForCQG(

@@ -20,7 +20,7 @@ datacollator = DataCollatorForCQG(
         padding=True,
         is_train=False,
         max_length=100,
-        n_contexts=5
+        n_contexts=10
 )
 
 from torch.utils.data import DataLoader
@@ -33,10 +33,13 @@ dataloader = DataLoader(
         collate_fn=datacollator
 )
 
-# fout = open("removeme.txt", 'w')
+fout = open("removeme.txt", 'w')
 # prediction 
 with torch.no_grad():
     for batch in tqdm(dataloader):
+        
+        questions = batch.pop('question')
+        c_questions = batch.pop('c_question')
         for k in batch:
             batch[k] = batch[k].cuda(model.device)
 
@@ -50,15 +53,17 @@ with torch.no_grad():
         crossattention_scores = model.get_crossattention_scores(
                 batch['attention_mask']
         )
-        print(crossattention_scores)
         model.reset_score_storage()
 
         # write outputs
         for k, o in enumerate(outputs):
-            c_question = tokenizer.decode(o, skip_special_tokens=True)
+            c_question_pred = tokenizer.decode(o, skip_special_tokens=True)
             # example = dataset.data[idx]
-            print(c_question)
-            # fout.write(c_question+'\n')
+            # print(c_question_pred)
+            # print(c_questions[k])
+            fout.write("QUESTION: "+questions[k]+'\n')
+            fout.write("PRED: "+c_question_pred+'\n')
+            fout.write("TRUTH: "+c_questions[k]+'\n')
 
             """
             Evaluation codes

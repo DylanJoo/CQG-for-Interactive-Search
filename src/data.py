@@ -95,6 +95,10 @@ class DataCollatorForCQG:
 
             inputs['labels'] = target_ids
             inputs['decoder_attention_mask'] = target_mask
+        ## this is for comparisons
+        else:
+            inputs['c_question'] =  [ex['c_question'] for ex in features]
+            inputs['question'] =  [ex['question'] for ex in features]
 
         return inputs
 
