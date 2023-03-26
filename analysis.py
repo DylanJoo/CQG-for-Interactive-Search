@@ -2,7 +2,7 @@ import re
 import json
 import numpy as np
 
-f = open('data/clariq_provenances_tc.jsonl', 'r')
+f = open('data/canard_provenances_tc.jsonl', 'r')
 # "question": clariq_dict['initial_request'],
 # "facet": clariq_dict['facet_desc'],
 # "c_need": clariq_dict['clarification_need'],
@@ -22,15 +22,18 @@ for i, line in enumerate(f):
 
     # serp
     q_serp, q_serp_scores = data['q_serp']
-    cq_serp, cq_serp_scores = data['cq_serp']
+    qt = set([re.sub(r"\d+", "", t) for t in q_serp])
 
-    ## serp's content
+    try:
+        cqt = set([re.sub(r"\d+", "", t) for t in cq_serp])
+        cq_serp, cq_serp_scores = data['cq_serp']
+    except:
+        cqt = qt
+        cq_serp = q_serp
+
+    ## overlapped
     oc = [c for c in q_serp if c in cq_serp]
     oc_counts.append(len(oc))
-
-    ## serp's title
-    qt = set([re.sub(r"\d+", "", t) for t in q_serp])
-    cqt = set([re.sub(r"\d+", "", t) for t in cq_serp])
     ot = [t for t in qt if t in cqt]
     ot_counts.append(len(ot))
 

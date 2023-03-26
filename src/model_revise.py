@@ -20,7 +20,6 @@ def cross_attention_forward(
 
         Additionally, we follow FiD's implmentation, store the attention scores in an additional paraemters:
         T5LayerCrossAttention.layer[1].EncDecAttention.score_storage = scores
-
         """
         # Input is (batch_size, seq_length, dim)
         # Mask is (batch_size, key_length) (non-causal) or (batch_size, key_length, key_length)
@@ -107,6 +106,9 @@ def cross_attention_forward(
         # [Start] Store the scores
         if self.score_storage is None:
             self.score_storage = scores
+            # attn_weights = F.softmax(scores.float(), dim=-1).type_as(
+            #     scores
+            # )  # (batch_size, n_heads, seq_length, key_length)
         # [End] Store the scores
 
         attn_weights = F.softmax(scores.float(), dim=-1).type_as(

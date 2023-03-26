@@ -48,7 +48,7 @@ def overlapped_provenances(plist_q, plist_cq, N):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # data args
-    parser.add_argument("--clariq_provenances", type=str)
+    parser.add_argument("--questions_with_provenances", type=str)
     parser.add_argument("--collections", type=str)
     parser.add_argument("--output", default='sample.jsonl', type=str)
     parser.add_argument("--N", default=20, type=int)
@@ -58,22 +58,26 @@ if __name__ == '__main__':
     collections = load_collections(args.collections)
 
     # Distributing passages to each query
-    with open(args.clariq_provenances, 'r') as fin, \
+    with open(args.questions_with_provenances, 'r') as fin, \
          open(args.output, 'w') as fout:
         for line in tqdm(fin):
             data = json.loads(line.strip())
 
             ## Overlapped provenance
             q_serp_list, q_serp_scores = data['q_serp']
-            cq_serp_list, cq_serp_scores = data['cq_serp']
+            if data['cq_serp'] is None:
+                cq_serp_list, cq_serp_scores = q_serp_list, q_serp_scores 
+            else:
+                cq_serp_list, cq_serp_scores = data['cq_serp']
             serp = overlapped_provenances(q_serp_list, cq_serp_list, args.N)
 
             fout.write(json.dumps({
                 "question": data['question'],
                 "c_question": data['c_question'],
+                "c_answer": data['c_answer'],
+                "c_need": data['c_need'],
                 "titles": [re.sub(r"\d+", "", docid) for docid in serp],
                 "provenances": [collections[docid] for docid in serp],
-                "c_need": data['c_need'],
             }, ensure_ascii=False)+'\n')
 
 

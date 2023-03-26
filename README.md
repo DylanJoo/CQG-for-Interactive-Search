@@ -12,14 +12,23 @@ Entire process includes
 ## Prerequisite
 There are some data and pacakge you need to install.
 
-### Datasets
+### Data
+- Datasets:
 Download the ClairQ and CANARD dataset.  The files have already stored in [data](data/).
-Check the original page [(ClarQ)](https://github.com/aliannejadi/ClariQ) and [(CANARD)](https://sites.google.com/view/qanta/projects/canard) for detail.
-```
-wget https://obj.umiacs.umd.edu/elgohary/CANARD_Release.zip
-unzip CANARD_Release.zip 
-```
+Check the original page 
+[ClariQ](https://github.com/aliannejadi/ClariQ), 
+[QuAC](https://sites.google.com/view/qanta/projects/canard), and
+[CANARD](https://sites.google.com/view/qanta/projects/canard).
+for detail.
 
+- Corpus: 
+We use the wiki dump with the preprocessed codes in DPR. The preprocessed corpus has about 21M passages with title. 
+The scripts are from original [DPR repo](#).
+
+You can ruTBD
+```
+bash download_data.sh
+```
 ### Packages
 ```
 pyserini

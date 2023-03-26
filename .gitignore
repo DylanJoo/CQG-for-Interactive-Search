@@ -1,3 +1,4 @@
+archived/
 temp/*
 logs/*
 *swp
@@ -7,6 +8,7 @@ removeme*
 # raw data
 data/canard/*
 data/clariq/*
+data/quac/*
 !data/clariq/train.tsv
 
 # data

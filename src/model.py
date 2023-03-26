@@ -111,7 +111,9 @@ class FiDT5(transformers.T5ForConditionalGeneration):
         scores = []
         n_passages = context_mask.size(1)
         for mod in self.decoder.block:
-            scores.append(mod.layer[1].EncDecAttention.score_storage)
+            s=mod.layer[1].EncDecAttention.score_storage
+            scores.append(mod.layer[1].EncDecAttention.score_storage) 
+            # batch_size, n_head, 1, n_passages*text_maxlength
         scores = torch.cat(scores, dim=2)
         bsz, n_heads, n_layers, _ = scores.size()
         # batch_size, n_head, n_layers, n_passages, text_maxlength
@@ -120,6 +122,11 @@ class FiDT5(transformers.T5ForConditionalGeneration):
         scores = scores.sum(dim=[1, 2, 4])
         ntokens = context_mask.sum(dim=[2]) * n_layers * n_heads
         scores = scores/ntokens
+
+        # change to the scores
+        # scores = F.softmax(scores.float(), dim=-1).type_as(
+        #     scores
+        # )  
         return scores
 
     def overwrite_forward_crossattention(self):
