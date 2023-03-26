@@ -1,0 +1,16 @@
+python3 src/train_fidmrg.py \
+    --model_name_or_path t5-base \
+    --n_contexts 10 \
+    --output_dir ./fidmrg \
+    --train_file data/train_fidmrg_v0.sample.jsonl \
+    --per_device_train_batch_size 2 \
+    --per_device_eval_batch_size 2 \
+    --max_length 256 \
+    --max_steps 100 \
+    --save_steps 50\
+    --eval_steps 25 \
+    --do_train true \
+    --do_eval false \
+    --dataloader_num_workers 0 \
+    --dataloader_pin_memory false \
+    --remove_unused_columns false

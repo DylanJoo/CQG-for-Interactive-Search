@@ -94,6 +94,7 @@ def main():
     model.set_checkpoint(model_args.use_checkpoint)
 
     ## dataset 
+    ### [TODO] simplify this stage to load as N-passages-selection is moved to another stage.
     dataset = clariq_cqg(data_args.train_file, model_args.n_contexts)
     from datasets import disable_caching
     disable_caching()
@@ -103,7 +104,7 @@ def main():
     else:
         dataset['eval'] = clariq_cqg(
                 data_args.eval_file, model_args.n_contexts
-        )
+        )['train']
 
     ## data collator
     datacollator = DataCollatorForCQG(

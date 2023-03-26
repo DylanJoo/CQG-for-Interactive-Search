@@ -1,14 +1,14 @@
 python3 src/train_fidcqg.py \
-    --model_name_or_path t5-small \
+    --model_name_or_path t5-base \
     --n_contexts 10 \
     --output_dir ./fidcqg \
-    --train_file data/train_cqg_v0.sample.train.jsonl \
-    --per_device_train_batch_size 2 \
-    --per_device_eval_batch_size 2 \
-    --max_length 256 \
-    --max_steps 100 \
-    --save_steps 50\
-    --eval_steps 25 \
+    --train_file data/train_cqg_v0.train.jsonl \
+    --per_device_train_batch_size 4 \
+    --per_device_eval_batch_size 4 \
+    --max_length 128 \
+    --max_steps 10000 \
+    --save_steps 2500 \
+    --eval_steps 2500 \
     --do_train true \
     --do_eval false \
     --dataloader_num_workers 0 \

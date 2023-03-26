@@ -12,6 +12,7 @@ from transformers import (
     GenerationConfig
 )
 from transformers import T5ForConditionalGeneration
+from datasets import load_dataset
 from model import FiDT5
 from data import DataCollatorForMRG
 
@@ -46,8 +47,8 @@ class OurDataArguments:
     validation_split_percentage: Optional[int] = field(default=0)
     preprocessing_num_workers: Optional[int] = field(default=None)
     # Customized arguments
-    train_file: Optional[str] = field(default='data/train_fidmrg_v0.sample.train.jsonl')
-    eval_file: Optional[str] = field(default='data/train_fidmrg_v0.sample.eval.jsonl')
+    train_file: Optional[str] = field(default='data/train_fidmrg_v0.sample.jsonl')
+    eval_file: Optional[str] = field(default='data/train_fidmrg_v0.sample.jsonl')
     max_length: int = field(default=256)
 
 @dataclass
@@ -93,19 +94,18 @@ def main():
     model.set_checkpoint(model_args.use_checkpoint)
 
     ## dataset 
-    dataset = clariq_cqg(data_args.train_file, model_args.n_contexts)
     from datasets import disable_caching
     disable_caching()
+    dataset = load_dataset('json', data_files=data_args.train_file)
     if training_args.do_eval and data_args.eval_file is None:
-        temp = dataset['train'].filter(lambda x: x['c_need']==4)
-        dataset['eval'] = temp.select(random.sample(range(len(temp)), 100))
-    else:
-        dataset['eval'] = clariq_cqg(
-                data_args.eval_file, model_args.n_contexts
+        dataset['eval'] = dataset['train'].select(
+                random.sample(range(len(temp)), 100)
         )
+    else:
+        dataset['eval'] = load_dataset('json', data_files=data_args.eval_file)['train']
 
     ## data collator
-    datacollator = DataCollatorForCQG(
+    datacollator = DataCollatorForMRG(
             tokenizer=tokenizer, 
             padding=True,
             max_length=data_args.max_length,

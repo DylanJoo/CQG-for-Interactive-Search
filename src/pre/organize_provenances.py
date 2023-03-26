@@ -71,15 +71,8 @@ if __name__ == '__main__':
                 cq_serp_list, cq_serp_scores = data['cq_serp']
             serp = overlapped_provenances(q_serp_list, cq_serp_list, args.N)
 
-            fout.write(json.dumps({
-                "question": data['question'],
-                "c_question": data['c_question'],
-                "c_answer": data['c_answer'],
-                "c_need": data['c_need'],
+            data.update({
                 "titles": [re.sub(r"\d+", "", docid) for docid in serp],
                 "provenances": [collections[docid] for docid in serp],
-            }, ensure_ascii=False)+'\n')
-
-
-
-
+            })
+            fout.write(json.dumps(data, ensure_ascii=False)+'\n')

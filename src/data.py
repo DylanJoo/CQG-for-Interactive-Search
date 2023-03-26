@@ -99,9 +99,8 @@ class DataCollatorForCQG:
             inputs['decoder_attention_mask'] = target_mask
 
         else:
-            inputs['info'] =  [ex['c_question'] for ex in features]
-            # inputs['c_question'] =  [ex['c_question'] for ex in features]
-            # inputs['question'] =  [ex['question'] for ex in features]
+            inputs['c_question'] =  [ex['c_question'] for ex in features]
+            inputs['question'] =  [ex['question'] for ex in features]
 
         return inputs
 
@@ -149,10 +148,10 @@ class DataCollatorForMRG:
         )
 
         ## labeling if needed.
+        print([ex['mi_response'] for ex in features])
         if self.is_train:
-            m_response = []
             targets = self.tokenizer.batch_encode_plus(
-                    m_response,
+                    [ex['mi_response'] for ex in features],
                     max_length=self.max_length_answer,
                     padding=True,
                     return_tensors=self.return_tensors,
@@ -166,7 +165,8 @@ class DataCollatorForMRG:
             inputs['decoder_attention_mask'] = target_mask
 
         else:
-            inputs['c_question'] =  [ex['c_question'] for ex in features]
+            # [TODO] add a label to differentiate "question" or "answer"
+            inputs['mi_response'] =  [ex['mi_response'] for ex in features]
             inputs['question'] =  [ex['question'] for ex in features]
 
         return inputs

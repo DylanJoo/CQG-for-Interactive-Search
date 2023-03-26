@@ -52,11 +52,8 @@ def pack_canard_to_jsonl(args):
         fout.write(json.dumps({
             "id": canard_dict['id'],
             "question": canard_dict['rewrite'],
-            "c_need": None,
-            "c_question": None,
-            "c_answer": None,
+            "answer": canard_dict['answer'],
             "q_serp": canard_serp[canard_dict['rewrite']],
-            "cq_serp": None
         }, ensure_ascii=False)+'\n')
     fout.close()
 
