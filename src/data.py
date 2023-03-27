@@ -148,7 +148,6 @@ class DataCollatorForMRG:
         )
 
         ## labeling if needed.
-        print([ex['mi_response'] for ex in features])
         if self.is_train:
             targets = self.tokenizer.batch_encode_plus(
                     [ex['mi_response'] for ex in features],

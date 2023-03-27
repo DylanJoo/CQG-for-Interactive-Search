@@ -48,8 +48,9 @@ class OurDataArguments:
     preprocessing_num_workers: Optional[int] = field(default=None)
     # Customized arguments
     train_file: Optional[str] = field(default='data/train_fidmrg_v0.sample.jsonl')
-    eval_file: Optional[str] = field(default='data/train_fidmrg_v0.sample.jsonl')
+    eval_file: Optional[str] = field(default=None)
     max_length: int = field(default=256)
+    max_length_answer: int = field(default=64)
 
 @dataclass
 class OurTrainingArguments(TrainingArguments):
@@ -97,9 +98,10 @@ def main():
     from datasets import disable_caching
     disable_caching()
     dataset = load_dataset('json', data_files=data_args.train_file)
+    N = len(dataset['train'])
     if training_args.do_eval and data_args.eval_file is None:
         dataset['eval'] = dataset['train'].select(
-                random.sample(range(len(temp)), 100)
+                random.sample(range(len(N)), 100)
         )
     else:
         dataset['eval'] = load_dataset('json', data_files=data_args.eval_file)['train']
@@ -109,6 +111,7 @@ def main():
             tokenizer=tokenizer, 
             padding=True,
             max_length=data_args.max_length,
+            max_length_answer=data_args.max_length_answer,
             return_tensors='pt',
             is_train=True,
             n_contexts=model_args.n_contexts
