@@ -6,26 +6,25 @@ import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
 
-def aggregate_ff(data, cq, f):
+def aggregate_ff(qa, qcq, f):
     """ 
     Aggregate two source of data in 50/50.  
     """
-    assert cq['question'] == data['question'], "the question is not aligned."
-    print(data.keys())
-    print(cq.keys())
+    assert qcq['question'] == qa['question'], \
+            "the question is not aligned."
     f.write(json.dumps({
-        "question": data['question'],
-        "mi_response": data['c_question'],
-        "titles": data['titles'],
-        "provenances": data['provenances']
+        "question": qa['question'],
+        "mi_response": qa['answer'],
+        "titles": qa['titles'],
+        "provenances": qa['provenances']
     }, ensure_ascii=False)+'\n')
 
     # clarification question
     f.write(json.dumps({
-        "question": data['question'],
-        "mi_response": cq['prediction'],
-        "titles": data['titles'],
-        "provenances": data['provenances']
+        "question": qa['question'],
+        "mi_response": qcq['prediction'],
+        "titles": qa['titles'],
+        "provenances": qa['provenances']
     }, ensure_ascii=False)+'\n')
 
     return 0

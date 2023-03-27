@@ -12,7 +12,7 @@
 # python3 src/pre/organize_provenances.py \
 #     --questions_with_provenances data/canard_provenances_tc.jsonl \
 #     --collections /tmp2/jhju/datasets/odqa-psgs/psgs_w100.jsonl \
-#     --output data/canard_fidcqg.jsonl \
+#     --output data/canard_qa_provenances.jsonl \
 #     --N 10
 
 ## (3) Generate clarification questions
@@ -27,8 +27,8 @@
 #     --max_length 256 \
 #     --device 'cuda'
 
-## (4) Merge the 'predicted' clarification questions
-python3 src/pre/organize_miresponses.py \
-    --convqa data/canard_fidcqg.jsonl \
-    --convqcq data/canard_cquestions.jsonl \
-    --output data/train_fidmrg_v0.jsonl
+# (4) Merge the 'predicted' clarification questions
+# python3 src/pre/organize_miresponses.py \
+#     --convqa data/canard_qa_provenances.jsonl \
+#     --convqcq data/canard_cquestions.jsonl \
+#     --output data/train_fidmrg_v0.jsonl
