@@ -22,9 +22,9 @@ os.environ["WANDB_DISABLED"] = "true"
 @dataclass
 class OurHFModelArguments:
     # Huggingface's original arguments
-    model_name_or_path: Optional[str] = field(default='t5-small')
-    config_name: Optional[str] = field(default='t5-small')
-    tokenizer_name: Optional[str] = field(default='t5-small')
+    model_name_or_path: Optional[str] = field(default='t5-base')
+    config_name: Optional[str] = field(default='t5-base')
+    tokenizer_name: Optional[str] = field(default='t5-base')
     cache_dir: Optional[str] = field(default=None)
     use_fast_tokenizer: bool = field(default=True)
     model_revision: str = field(default="main")

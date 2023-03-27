@@ -1,5 +1,7 @@
 python3 src/train_fidcqg.py \
     --model_name_or_path t5-base \
+    --config_name t5-base \
+    --tokenizer_name t5-base \
     --n_contexts 10 \
     --output_dir ./fidcqg \
     --train_file data/train_cqg_v0.train.jsonl \
