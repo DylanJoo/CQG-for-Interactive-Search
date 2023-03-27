@@ -101,7 +101,7 @@ def main():
     N = len(dataset['train'])
     if training_args.do_eval and data_args.eval_file is None:
         dataset['eval'] = dataset['train'].select(
-                random.sample(range(len(N)), 100)
+                random.sample(range(N), 100)
         )
     else:
         dataset['eval'] = load_dataset('json', data_files=data_args.eval_file)['train']
