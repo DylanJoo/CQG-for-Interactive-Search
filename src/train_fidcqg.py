@@ -15,6 +15,7 @@ from transformers import T5ForConditionalGeneration
 from model import FiDT5
 from data import clariq_cqg
 from data import DataCollatorForCQG
+from datasets import load_dataset
 
 import os
 os.environ["WANDB_DISABLED"] = "true"
@@ -98,13 +99,13 @@ def main():
     dataset = clariq_cqg(data_args.train_file, model_args.n_contexts)
     from datasets import disable_caching
     disable_caching()
+    N = len(dataset['train'])
     if training_args.do_eval and data_args.eval_file is None:
-        temp = dataset['train'].filter(lambda x: x['c_need']==4)
-        dataset['eval'] = temp.select(random.sample(range(len(temp)), 100))
+        dataset['eval'] = dataset['train'].select(
+                random.sample(range(N), 100)
+        )
     else:
-        dataset['eval'] = clariq_cqg(
-                data_args.eval_file, model_args.n_contexts
-        )['train']
+        dataset['eval'] = load_dataset('json', data_files=data_args.eval_file)['train']
 
     ## data collator
     datacollator = DataCollatorForCQG(
