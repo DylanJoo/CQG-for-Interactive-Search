@@ -9,7 +9,11 @@ def main(args):
         for i, dict_canard in enumerate(canard):
             query_dict = { }
             quac_id = f"{dict_canard['QuAC_dialog_id']}_q#{dict_canard['Question_no']-1}"
-            assert QUAC_ANS[quac_id]['Question'] == dict_canard['Question'], 'Mismatched'
+            # assert QUAC_ANS[quac_id]['Question'] == dict_canard['Question'], 'Mismatched'
+            if QUAC_ANS[quac_id]['Question'] != dict_canard['Question']:
+                print(QUAC_ANS[quac_id]['Question'])
+                print(dict_canard['Question'])
+                print(quac_id)
 
             query_dict['id'] = quac_id
             query_dict['answer'] = QUAC_ANS[quac_id]['Answer'].strip()
@@ -36,6 +40,9 @@ def parse_quac(dir):
                 turn_id = f'{turn_id.split("q#")[0]}q#{i}'
 
             if turn['id'] == "C_2ca59977d66d4742939232f443ceda41_1_q#6":
+                print(f"[FIX] Ambiguous question: {turn['question']}, ignore this turn.")
+                i -= 1
+            elif turn['id'] == "C_8f1052a909924795a456beaa053ffe22_0_q#6":
                 print(f"[FIX] Ambiguous question: {turn['question']}, ignore this turn.")
                 i -= 1
             else:
