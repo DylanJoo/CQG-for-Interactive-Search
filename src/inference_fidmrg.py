@@ -6,7 +6,7 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 from datasets import load_dataset
 from model import FiDT5
-from data import DataCollatorForCQG
+from data import DataCollatorForMRG
 from torch.utils.data import DataLoader
 
 def generate(inputs, max_length, device, model, tokenizer, f):
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     model.reset_score_storage()
 
     # organize dataset/dataloader
-    datacollator = DataCollatorForCQG(
+    datacollator = DataCollatorForMRG(
             tokenizer=tokenizer,
             padding=True,
             is_train=False,
