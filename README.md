@@ -29,7 +29,17 @@ In case you would like to modify the data; the following scripts provide the det
 ```
 bash download_data.sh
 
-python3 src/tools/parse_canard.py 
+# train data
+python3 src/tools/parse_canard.py \
+  --path_canard data/canard/train.json \
+  --path_output data/canard/train.jsonl \
+  --dir_quac data/quac/
+
+# testing data
+python3 src/tools/parse_canard.py \
+  --path_canard data/canard/test.json \
+  --path_output data/canard/test.jsonl \
+  --dir_quac data/quac/
 ```
 ### Packages
 ```
