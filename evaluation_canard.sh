@@ -10,7 +10,7 @@ mkdir -p evaluation
 #     --k1 0.9 \
 #     --b 0.4
 
-## (2) set the provenances for FiD
+## (2.1) set the provenances for FiD
 ## [NOTE] Here we can also adopt another retrieval model 
 ## to update the provenances.
 # python3 src/pre/organize_provenances.py \
@@ -18,11 +18,15 @@ mkdir -p evaluation
 #     --collections /tmp2/jhju/datasets/odqa-psgs/psgs_w100.jsonl \
 #     --output evaluation/canard_qa_provenances.jsonl \
 #     --N 10
+## (2.2) set the answer
+# python3 src/pre/organize_miresponses.py \
+#     --convqa evaluation/canard_qa_provenances.jsonl \
+#     --output evaluation/canard_test_fidmrg_v0.jsonl
 
 ## (3) Generate clarification questions
 python3 src/inference_fidmrg.py \
-    --jsonl_file evaluation/canard_qa_provenances.jsonl \
-    --output_file evaluation/canard_cquestions.jsonl \
+    --jsonl_file evaluation/canard_test_fidmrg_v0.jsonl \
+    --output_file evaluation/canard_test_pred.jsonl \
     --batch_size 2 \
     --used_checkpoint fidmrg/checkpoint-10000/ \
     --used_tokenizer t5-base \
