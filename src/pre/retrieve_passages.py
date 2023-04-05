@@ -60,11 +60,10 @@ def pack_canard_to_jsonl(args):
 def pack_qrecc_to_jsonl(args):
     qrecc = load_dataset('json', data_files=args.qrecc)['train']
     ## [NOTE] Take out the NQ data since it's an augmented convQA
-    qrecc = qrecc.filter(lambda ex: ex['Conversation_source'] != 'nq')
 
     # add column (unique question id)
     qrecc = qrecc.map(lambda ex: 
-            {"id": f"{ex['Conversation_no']}_ex['Turn_no']"}
+            {"id": f"{ex['Conversation_no']}_{ex['Turn_no']}"}
     )
 
     # Get queries
