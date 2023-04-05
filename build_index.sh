@@ -22,4 +22,4 @@ python3 -m pyserini.index.lucene \
   --input /tmp2/jhju/datasets/odcqa-psgs/tc/ \
   --index /tmp2/jhju/indexes/odcqa-psgs \
   --generator DefaultLuceneDocumentGenerator \
-  --threads 4
+  --threads 8

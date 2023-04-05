@@ -6,7 +6,7 @@ python3 src/pre/retrieve_passages.py \
     --clariq data/clariq/train.tsv \
     --collections None \
     --output data/clariq_provenances_tc.jsonl \
-    --index_dir /tmp2/jhju/indexes/odcqa-psgs/ \
+    --index_dir /tmp2/jhju/indexes/odcqa-psgs \
     --k 100 \
     --k1 0.9 \
     --b 0.4

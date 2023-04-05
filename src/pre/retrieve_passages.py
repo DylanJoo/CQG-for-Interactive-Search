@@ -2,18 +2,21 @@ import json
 import argparse
 import pandas as pd
 from tqdm import tqdm
-from datasets import load_dataset
+from datasets import load_dataset, Dataset
 from pyserini.search.lucene import LuceneSearcher
 
 def pack_clariq_to_jsonl(args):
-    clariq_df = pd.read_csv(args.clariq, delimiter='\t')
-    clariq_df.dropna(inplace=True) # 610 instances have no cq and ca
+    df = pd.read_csv(args.clariq, delimiter='\t')
+    # 610 instances have no cq and ca
+    clariq = Dataset.from_pandas(df.dropna())
 
-    # Get queries
-    queries = clariq_df['initial_request'].unique().tolist() + \
-            clariq_df['question'].unique().tolist()
+    # add a column (question plus c_question)
+    clariq = clariq.map(lambda ex: 
+            {"q_and_cq": f"{ex['initial_request']} {ex['question']}"}
+    )
 
-    # Search
+    # Get queries for search
+    queries = clariq['initial_request'] + clariq['q_and_cq']
     clariq_serp = sparse_retrieve(queries, args)
 
     # Add SERP to clariq dataset
@@ -65,18 +68,19 @@ def pack_qrecc_to_jsonl(args):
     qrecc = qrecc.map(lambda ex: 
             {"id": f"{ex['Conversation_no']}_{ex['Turn_no']}"}
     )
+    # add column (question plus answer)
+    qrecc = qrecc.map(lambda ex: 
+            {"q_and_a": f"{ex['Rewrite']}_{ex['Answer']}"}
+    )
 
-    # Get queries
+    # Get queries and search
     ## Setting 1: Rewritten queries
-    queries = qrecc['Rewrite']
-    ## [NOTE] Setting 2: Conversational queries
-    # queries = ??
-
-    # Search 
-    ## Setting 1: TopK provenances
+    queries = qrecc['Rewrite'] + qrecc['q_and_a']
     qrecc_serp = sparse_retrieve(queries, args)
-    ## [NOTE] Setting 2: dense retrieve/cluster retrieve
-    # qrecc_serp = ??
+
+    ## [NOTE] Other possible strategy:
+    ## Conversational queries
+    ## dense retrieve/cluster retrieve
 
     # Add SERP to qrecc dataset
     fout = open(args.output, 'w') 
@@ -86,6 +90,7 @@ def pack_qrecc_to_jsonl(args):
             "question": qrecc_dict['Rewrite'],
             "answer": qrecc_dict['Answer'],
             "q_serp": qrecc_serp[qrecc_dict['Rewrite']],
+            "a_serp": qrecc_serp[qrecc_dict['q_and_a']],
         }, ensure_ascii=False)+'\n')
     fout.close()
 

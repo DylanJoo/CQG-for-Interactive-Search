@@ -64,12 +64,15 @@ if __name__ == '__main__':
             data = json.loads(line.strip())
 
             ## Overlapped provenance
-            q_serp_list, q_serp_scores = data.pop('q_serp')
-            if 'cq_serp' not in data.keys(): # i.e., CQA
-                cq_serp_list, cq_serp_scores = q_serp_list, q_serp_scores 
+            serp_list0, q_serp_scores = data.pop('q_serp')
+            if 'cq_serp' in data.keys(): # i.e., ClariQ
+                serp_list1, serp_scores1 = data.pop('cq_serp')
+            elif 'q_serp' in data.keys(): # i.e., CQA
+                serp_list1, serp_scores1 = data.pop('a_serp')
             else: # i.e., ClariQ
-                cq_serp_list, cq_serp_scores = data.pop('cq_serp')
-            serp = overlapped_provenances(q_serp_list, cq_serp_list, args.N)
+                serp_list1, serp_scores1 = serp_list0, q_serp_scores 
+
+            serp = overlapped_provenances(serp_list0, serp_list1, args.N)
 
             data.update({
                 "titles": [re.sub(r"\d+", "", docid) for docid in serp],

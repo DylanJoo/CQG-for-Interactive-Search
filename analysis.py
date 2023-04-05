@@ -2,7 +2,7 @@ import re
 import json
 import numpy as np
 
-f = open('data/canard_provenances_tc.jsonl', 'r')
+f = open('data/clariq_provenances_tc.jsonl', 'r')
 # "question": clariq_dict['initial_request'],
 # "facet": clariq_dict['facet_desc'],
 # "c_need": clariq_dict['clarification_need'],
