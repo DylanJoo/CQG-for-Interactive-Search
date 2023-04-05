@@ -14,12 +14,12 @@ There are some data and pacakge you need to install.
 
 ### Data
 - Datasets:
-Download the ClairQ and CANARD dataset.  The files have already stored in [data](data/).
+Download the ClairQ and QReCC dataset dataset.  
+The files have already stored in [data](data/).
 Check the original page 
-[ClariQ](https://github.com/aliannejadi/ClariQ), 
-[QuAC](https://sites.google.com/view/qanta/projects/canard), and
-[CANARD](https://sites.google.com/view/qanta/projects/canard).
-for detail.
+[ClariQ](https://github.com/aliannejadi/ClariQ) and 
+[QReCC](https://github.com/apple/ml-qrecc).
+Note that QReCC contains [QuAC](https://sites.google.com/view/qanta/projects/canard), [CANARD](https://sites.google.com/view/qanta/projects/canard) and TRECCAsT dataset.
 
 - Corpus: 
 We use the wiki dump with the preprocessed codes in DPR. The preprocessed corpus has about 21M passages with title. 
@@ -33,12 +33,6 @@ bash download_data.sh
 python3 src/tools/parse_canard.py \
   --path_canard data/canard/train.json \
   --path_output data/canard/train.jsonl \
-  --dir_quac data/quac/
-
-# testing data
-python3 src/tools/parse_canard.py \
-  --path_canard data/canard/test.json \
-  --path_output data/canard/test.jsonl \
   --dir_quac data/quac/
 ```
 ### Packages

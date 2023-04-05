@@ -1,12 +1,12 @@
 ## (1) retrieve K provenances
-# python3 src/pre/retrieve_passages.py \
-#     --canard data/canard/train.jsonl \
-#     --collections None \
-#     --output data/canard_provenances_tc.jsonl \
-#     --index_dir /tmp2/jhju/indexes/odqa-psgs_w100_jsonl_tc/ \
-#     --k 100 \
-#     --k1 0.9 \
-#     --b 0.4
+python3 src/pre/retrieve_passages.py \
+    --canard data/canard/train.jsonl \
+    --collections None \
+    --output data/canard_provenances_tc.jsonl \
+    --index_dir /tmp2/jhju/indexes/odqa-psgs_w100_jsonl_tc/ \
+    --k 100 \
+    --k1 0.9 \
+    --b 0.4
 
 ## (2) set the provenances for FiD
 # python3 src/pre/organize_provenances.py \

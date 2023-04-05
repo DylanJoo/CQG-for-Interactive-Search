@@ -1,6 +1,11 @@
 # ClariQ
 mkdir -p data/clariq
 
+# QReCC
+mkdir -p data/qrecc
+wget https://github.com/apple/ml-qrecc/raw/main/dataset/qrecc_data.zip -O data/qrecc/qrecc_data.zip
+unzip data/qrecc/qrecc_data.zip
+
 # QuAC
 mkdir -p data/quac
 wget https://s3.amazonaws.com/my89public/quac/train_v0.2.json -O data/quac/train_v0.2.json

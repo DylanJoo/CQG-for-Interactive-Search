@@ -57,6 +57,39 @@ def pack_canard_to_jsonl(args):
         }, ensure_ascii=False)+'\n')
     fout.close()
 
+def pack_qrecc_to_jsonl(args):
+    qrecc = load_dataset('json', data_files=args.qrecc)['train']
+    ## [NOTE] Take out the NQ data since it's an augmented convQA
+    qrecc = qrecc.filter(lambda ex: ex['Conversation_source'] != 'nq')
+
+    # add column (unique question id)
+    qrecc = qrecc.map(lambda ex: 
+            {"id": f"{ex['Conversation_no']}_ex['Turn_no']"}
+    )
+
+    # Get queries
+    ## Setting 1: Rewritten queries
+    queries = qrecc['Rewrite']
+    ## [NOTE] Setting 2: Conversational queries
+    # queries = ??
+
+    # Search 
+    ## Setting 1: TopK provenances
+    qrecc_serp = sparse_retrieve(queries, args)
+    ## [NOTE] Setting 2: dense retrieve/cluster retrieve
+    # qrecc_serp = ??
+
+    # Add SERP to qrecc dataset
+    fout = open(args.output, 'w') 
+    for qrecc_dict in qrecc:
+        fout.write(json.dumps({
+            "id": qrecc_dict['id'],
+            "question": qrecc_dict['Rewrite'],
+            "answer": qrecc_dict['Answer'],
+            "q_serp": qrecc_serp[qrecc_dict['Rewrite']],
+        }, ensure_ascii=False)+'\n')
+    fout.close()
+
 def sparse_retrieve(queries, args):
     """ This step can be changed to any other text ranking models 
 
@@ -84,13 +117,14 @@ if __name__ == '__main__':
     # data args
     parser.add_argument("--clariq", type=str, default=None)
     parser.add_argument("--canard", type=str, default=None)
+    parser.add_argument("--qrecc", type=str, default=None)
     parser.add_argument("--collections", type=str, default=None)
     parser.add_argument("--output", default='sample.jsonl', type=str)
     # search args
     parser.add_argument("--index_dir", type=str)
     parser.add_argument("--k", default=100, type=int)
-    parser.add_argument("--k1",type=float)
-    parser.add_argument("--b", type=float)
+    parser.add_argument("--k1",default=0.9, type=float)
+    parser.add_argument("--b", default=0.4, type=float)
     args = parser.parse_args()
 
     if args.clariq:
@@ -98,5 +132,8 @@ if __name__ == '__main__':
 
     if args.canard:
         pack_canard_to_jsonl(args)
+
+    if args.qrecc:
+        pack_qrecc_to_jsonl(args)
         
 
