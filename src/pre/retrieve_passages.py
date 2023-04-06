@@ -21,14 +21,14 @@ def pack_clariq_to_jsonl(args):
 
     # Add SERP to clariq dataset
     fout = open(args.output, 'w') 
-    for i,clariq_dict in clariq_df.to_dict('index').items():
+    for clariq_dict in clariq:
         fout.write(json.dumps({
             "question": clariq_dict['initial_request'],
             "c_need": clariq_dict['clarification_need'],
             "c_question": clariq_dict['question'],
             "c_answer": clariq_dict['answer'],
             "q_serp": clariq_serp[clariq_dict['initial_request']],
-            "cq_serp": clariq_serp[clariq_dict['question']],
+            "cq_serp": clariq_serp[f"{clariq_dict['initial_request']} {clariq_dict['question']}"],
         }, ensure_ascii=False)+'\n')
             # "facet": clariq_dict['facet_desc'],
             # "f_serp": clariq_serp[clariq_dict['facet_desc']],

@@ -5,6 +5,10 @@ import argparse
 import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
+import unicodedata
+
+def normalize(text):
+    return unicodedata.normalize("NFD", text)
 
 def load_collections(path):
     collections = {}
@@ -12,7 +16,7 @@ def load_collections(path):
     with open(path, 'r') as f:
         for line in tqdm(f):
             data = json.loads(line.strip())
-            collections[data['id']] = data['contents']
+            collections[data['id']] = normalize(data['contents'])
     print("Done!")
     return collections
 
@@ -75,7 +79,7 @@ if __name__ == '__main__':
             serp = overlapped_provenances(serp_list0, serp_list1, args.N)
 
             data.update({
-                "titles": [re.sub(r"\d+", "", docid) for docid in serp],
+                "titles": [docid.split("#")[0] for docid in serp],
                 "provenances": [collections[docid] for docid in serp],
             })
             fout.write(json.dumps(data, ensure_ascii=False)+'\n')

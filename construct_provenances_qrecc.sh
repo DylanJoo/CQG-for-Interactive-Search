@@ -1,12 +1,12 @@
 ## (1) retrieve K provenances
-python3 src/pre/retrieve_passages.py \
-    --qrecc data/qrecc/qrecc_train.json \
-    --collections None \
-    --output data/qrecc_provenances_tc.jsonl \
-    --index_dir /tmp2/jhju/indexes/odcqa-psgs \
-    --k 100 \
-    --k1 0.9 \
-    --b 0.4
+# python3 src/pre/retrieve_passages.py \
+#     --qrecc data/qrecc/qrecc_train.json \
+#     --collections None \
+#     --output data/qrecc_provenances_tc.jsonl \
+#     --index_dir /tmp2/jhju/indexes/odcqa-psgs \
+#     --k 100 \
+#     --k1 0.9 \
+#     --b 0.4
 
 ## (2) set the provenances for FiD
 python3 src/pre/organize_provenances.py \
