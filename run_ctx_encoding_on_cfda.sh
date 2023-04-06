@@ -1,5 +1,6 @@
 CORPUS_PREFIX=/home/jhju/datasets/full_wiki_segments/full_wiki_segments.jsonl
-
+echo "-------\n" >> log
+echo "Run the following shards..." >> log
 for i in {00000..00025};do
     python3 -m pyserini.encode input \
       --corpus ${CORPUS_PREFIX}${i} \
@@ -13,5 +14,5 @@ for i in {00000..00025};do
       --batch 48 \
       --fp16 \
       --device cuda:1
-    echo $CORPUS_PREFIX $i "encoding and indexing is finished." >> log
+    echo "Shard" $i  >> log
 done
