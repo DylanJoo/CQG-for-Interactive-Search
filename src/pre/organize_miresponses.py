@@ -12,8 +12,9 @@ def aggregate_ff(qa, qcq, writer):
     writer.write(json.dumps({
         "question": qa['question'],
         "mi_response": qa['answer'],
+        "c_need": 0, 
         "titles": qa['titles'],
-        "provenances": qa['provenances']
+        "provenances": qa['provenances'],
     }, ensure_ascii=False)+'\n')
 
     # clarification question
@@ -23,6 +24,7 @@ def aggregate_ff(qa, qcq, writer):
         f.write(json.dumps({
             "question": qa['question'],
             "mi_response": qcq['prediction'],
+            "c_need": 1,
             "titles": qa['titles'],
             "provenances": qa['provenances']
         }, ensure_ascii=False)+'\n')

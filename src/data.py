@@ -15,26 +15,6 @@ import json
 import numpy as np
 import pandas as pd
 
-def clariq_cqg(path, n_context):
-    """ Preprocess/synthesize CQG training (1st stage).
-
-    Methods 
-    -------
-    get_top_n(): Retrieve the top n provenances of each example.
-    """
-    def get_top_n(ex, n):
-        ex['provenances'] = ex['provenances'][:n]
-
-    from datasets import load_dataset
-    dataset = load_dataset('json', data_files=path)
-    # add id column
-    # dataset.add_column("id", [f"clariq_{i}" for i in range(len(dataset))])
-
-    if n_context is not None:
-        dataset.map(get_top_n, fn_kwargs={"n": n_context})
-    return dataset
-
-
 from dataclasses import dataclass, field
 from typing import Optional, Union, List, Dict, Tuple, Any
 from transformers.tokenization_utils_base import (
@@ -119,7 +99,6 @@ class DataCollatorForMRG:
     n_contexts: Union[int, str] = 1
     #[NOTE] Some corpus has no title.
     # include_title: Union[bool, str] = False 
-    answer_response: Union[bool, str] = False
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
 
@@ -148,9 +127,11 @@ class DataCollatorForMRG:
         )
 
         ## labeling if needed.
+        prefix = (lambda x: 'clarification' if x>0 else 'response')
         if self.is_train:
+            texts = [f"{prefix(ex['c_need'])}: {ex['mi_response']}" for ex in features]
             targets = self.tokenizer.batch_encode_plus(
-                    [ex['mi_response'] for ex in features],
+                    texts,
                     max_length=self.max_length_answer,
                     padding=True,
                     return_tensors=self.return_tensors,
@@ -164,7 +145,6 @@ class DataCollatorForMRG:
             inputs['decoder_attention_mask'] = target_mask
 
         else:
-            # [TODO] add a label to differentiate "question" or "answer"
             inputs['mi_response'] =  [ex['mi_response'] for ex in features]
             inputs['question'] =  [ex['question'] for ex in features]
 
