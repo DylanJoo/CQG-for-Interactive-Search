@@ -16,25 +16,26 @@ There are some data and pacakge you need to install.
 - Datasets:
 Download the ClairQ and QReCC dataset dataset.  
 The files have already stored in [data](data/).
+
 Check the original page 
-[ClariQ](https://github.com/aliannejadi/ClariQ) and 
-[QReCC](https://github.com/apple/ml-qrecc).
-Note that QReCC contains [QuAC](https://sites.google.com/view/qanta/projects/canard), [CANARD](https://sites.google.com/view/qanta/projects/canard) and TRECCAsT dataset.
+- [ClariQ](https://github.com/aliannejadi/ClariQ)
+- [QReCC](https://github.com/apple/ml-qrecc).
+(Note that QReCC contains [QuAC](https://sites.google.com/view/qanta/projects/canard), [CANARD](https://sites.google.com/view/qanta/projects/canard) and TRECCAsT dataset).
+
+### Parse QReCC In case you would like to modify the data; the following scripts provide the detail of data and preprocessing and formatting.
+```
+# [TODO] revise this into qrecc
+# [TODO] documentation update
+python3 src/tools/parse_qrecc.py \
+  --qrecc data/qrecc/train.?? \
+  --output data/qrecc/train.?? \
+  --quac data/quac/
+```
 
 - Corpus: 
 We use the wiki dump with the preprocessed codes in DPR. The preprocessed corpus has about 21M passages with title. 
 The scripts are from original [DPR repo](#).
 
-In case you would like to modify the data; the following scripts provide the detail of data and preprocessing and formatting.
-```
-bash download_data.sh
-
-# train data
-python3 src/tools/parse_canard.py \
-  --path_canard data/canard/train.json \
-  --path_output data/canard/train.jsonl \
-  --dir_quac data/quac/
-```
 ### Packages
 ```
 pyserini
@@ -43,28 +44,40 @@ datasets
 ```
 ---
 
-## 1. Construct SERP of ClariQ
+### 1. Construct SERP of ClariQ
 
-### Build lucene index 
+### 1.0 Build lucene index 
 Build the inverted index of passages in the corpus using pyserini toolkit.
-Recommend to use pyserini API to build the lucene index.
+Recommend to use pyserini API to build the FAISS or lucene index.
 ```
-# Run `build_index.sh`
+# Example of the Lucene index (`build_sparse_index.sh`).
 python3 -m pyserini.index.lucene \
   --collection JsonCollection \
-  --input <directory of jsonl> \
-  --index <directory of indexes> \
+  --input <CORPUS_DIR (title included jsonl) > \
+  --index <INDEX_DIR> \
   --generator DefaultLuceneDocumentGenerator \
   --threads 4 \
   --storePositions --storeDocvectors --storeRaw
+
+# Example of the FAISS index (`build_dense_index.sh`).
+# Note that we used the DPR context and query encoder for dense retrieval.
+python3 -m pyserini.encode input \
+  --corpus <CORPUS_PATH (title-included with [SEP]> \
+  --fields text \
+  --shard-id 0 \
+  --shard-num 1 output \
+  --embeddings <INDEX_DIR> \
+  --to-faiss encoder \
+  --encoder facebook/dpr-ctx_encoder-multiset-base \
+  --fields text \
+  --batch 48 \
+  --fp16 \
+  --device cuda:0
 ```
 
-### Construct provenance aka SERP (wiki passage excerpts) for each questions
-You can also run `construct_provenance_clariq.sh`. 
-This code includes two steps.
-
-(a) Search from the corpus and retrieve top-K passages via BM25 search.
+You can run `construct_provenance_clariq.sh` directly, which includes the following two steps:
 ```
+# Find K provenance candidates
 python3 src/pre/retrieve_passages.py \
     --clariq data/clariq/train.tsv \
     --output <CLARIQ_PRV> \
@@ -72,18 +85,17 @@ python3 src/pre/retrieve_passages.py \
     --k 100 \
     --k1 0.9 \
     --b 0.4
-```
 
-(b) Select N passages and prepare the CQG inputs. This data is the training data for FiD-CQG.
+# Select N provenances. This data is the training data for FiD-CQG.
 ```
 python3 src/pre/organize_provenances.py \
     --questions_with_provenances data/clariq_provenances_tc.jsonl \
-    --collections /tmp2/jhju/datasets/odqa-psgs/psgs_w100.jsonl \
+    --collections <CORPUS_DIR (title-separated jsonl) > \
     --output data/train_fidcqg_v0.jsonl \
     --N 10
 ```
 
-## 2. Fine-tune FiD-CQG: Corpus-aware clarification question generation
+### 2. Fine-tune FiD-CQG: Corpus-aware clarification question generation
 Fine-tune the FiD-T5 model with synthetic ClariQ-SERP.
 I use the default training setups, you can also find more detail in `src/train_fidcqg.py` for detail.
 ```
@@ -107,17 +119,14 @@ python3 src/train_fidcqg.py \
 ```
 
 ## 3. End-to-end Training data augmentation: generate clarification questions
-You can also run `construct_provenances_canard.sh`, which is the same as the following codes.
 
-### Retrieve provenances (wiki passage excerpts) for each ConvQA's questions
-We use CANARD's rewritten query and retrieve top-K passages.
-Follow the stage 1: we use BM25 for searching topK passages from the corpus.
+You can also run `construct_provenances_canard.sh`, which is the same as the following four steps.
+
 ```
 # Find K provenance candidates
 python3 src/pre/retrieve_passages.py \
-    --canard data/canard/train.jsonl \
-    --collections None \
-    --output data/<CANARD_PROV> \
+    --qrecc data/qrecc/train.??? \
+    --output data/<QRECC_PROV> \
     --index_dir <INDEX_DIR>
     --k 100 \
     --k1 0.9 \
@@ -126,30 +135,27 @@ python3 src/pre/retrieve_passages.py \
 # Select N provenances
 python3 src/pre/organize_provenances.py \
     --questions_with_provenances data/<CANARD_PROV> \
-    --collections /tmp2/jhju/datasets/odqa-psgs/psgs_w100.jsonl \
+    --collections <CORPUS_PATH (title-separated)> \
     --output data/test_canard_fidcqg.jsonl \
     --N 10
-```
 
-### Inference FiD-CQG with CANARD queries: Generate clarification questions
-Run text generation script `inference_fidcqg.py` with the fine-tuned checkpoint as our default settings.
-This script will generate the corresponding clarification questions.
-Follow this `jsonl` data format.
-```
-# Inference predicted CQ
+# Predict clarification questions for QReCC queries.
+# Use the fine-tuned FiD-CQG model.
 python3 src/inference_fidcqg.py \
     --jsonl_file test_canard_fidcqg.jsonl \
-    --output_file <CANARD_CQG> \
+    --output_file <QRECC_CQG> \
     --used_checkpoint ./fidcqg/checkpoint-10000/ \
     --calculate_crossattention \
     --n_contexts 10 \
     --max_length 50 \
     --device 'cuda' \
-```
-Then, prepare the MRG training instances, include: (1) Clarificiation questions(Predicted) and (2) Answer (from QuAC).
-```
-```
 
-
+# Rearrage the target of miresponse, including questions and c_question
+# [TODO] such sampling method can be further improved.
+python3 src/pre/organize_miresponses.py \
+    --convqa data/qrecc/train.??? \
+    --convcqa <QRECC_CQG> \
+    --output data/train_fidmrg_v0.jsonl 
+```
 
 ## 4. 

@@ -7,10 +7,9 @@ from tqdm import tqdm
 from datasets import load_dataset
 import unicodedata
 
-def normalize(text):
-    return unicodedata.normalize("NFD", text)
-
 def load_collections(path):
+    def normalize(text):
+        return unicodedata.normalize("NFD", text)
     collections = {}
     print("Load collections...")
     with open(path, 'r') as f:
@@ -20,33 +19,30 @@ def load_collections(path):
     print("Done!")
     return collections
 
-def overlapped_provenances(plist_q, plist_cq, N):
-    """
-    Parameters
-    ----------
-    N: int
-        Number of provenances should be considered, 
-        including list of q and list of cq
-
-    Returns
-    -------
-    serp: List 
-        The list of overlapped provenances of two lists.
-    """
+def overlapped_provenances(plist_q, plist_qcq, N):
+    """ Organize the overlapped passages as the final provencens """
     # the overlapped
-    serp = [docid for docid in plist_q if docid in plist_cq]
+    serp = [docid for docid in plist_q if docid in plist_qcq]
     doc_q = [docid for docid in plist_q if docid not in serp]
-    doc_cq = [docid for docid in plist_cq if docid not in serp]
+    doc_qcq = [docid for docid in plist_qcq if docid not in serp]
 
     n = len(serp)
     if n < N:
         offset = math.ceil((N-n)/2)
-        serp += doc_cq[:offset]
+        serp += doc_qcq[:offset]
         serp += doc_q[:offset]
 
     # [NOTE] Move the randomly sampled orders to collator
-
     return serp[:N]
+
+def exclusive_provenances(plist_q, plist_qa, N):
+    """ Organize the passages with exclusion of the QA retrieved.
+    as the final provencens """
+    # the overlapped
+    serp = [docid for docid in plist_q if docid not in plist_qa]
+    doc_q = [docid for docid in plist_q if docid not in serp]
+    # doc_qa = [docid for docid in plist_qa if docid not in serp]
+    return (serp+doc_q)[:N]
 
 
 if __name__ == '__main__':
@@ -56,6 +52,8 @@ if __name__ == '__main__':
     parser.add_argument("--collections", type=str)
     parser.add_argument("--output", default='sample.jsonl', type=str)
     parser.add_argument("--N", default=20, type=int)
+    parser.add_argument("--overlapped", default=False, action='store_true')
+    parser.add_argument("--exclusive", default=False, action='store_true')
     args = parser.parse_args()
 
     # Load collections for docid
@@ -69,14 +67,16 @@ if __name__ == '__main__':
 
             ## Overlapped provenance
             serp_list0, q_serp_scores = data.pop('q_serp')
-            if 'cq_serp' in data.keys(): # i.e., ClariQ
-                serp_list1, serp_scores1 = data.pop('cq_serp')
-            elif 'q_serp' in data.keys(): # i.e., CQA
-                serp_list1, serp_scores1 = data.pop('a_serp')
-            else: # i.e., ClariQ
-                serp_list1, serp_scores1 = serp_list0, q_serp_scores 
+            serp_list1, serp_scores1 = data.pop('ref_serp', None)
+            assert (serp_list1 is not None) == (args.overlapped and args.exclusive), 'Cannot find two SERP in the data dict.'
 
-            serp = overlapped_provenances(serp_list0, serp_list1, args.N)
+            if args.overlapped:
+                serp = overlapped_provenances(serp_list0, serp_list1, args.N)
+            elif args.exclusive:
+                serp = exclusive_provenances(serp_list0, serp_list1, args.N)
+            else:
+                serp = serp_list0[:args.N]
+
 
             data.update({
                 "titles": [docid.split("#")[0] for docid in serp],

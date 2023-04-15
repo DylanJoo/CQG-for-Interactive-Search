@@ -1,5 +1,7 @@
 # ClariQ
 mkdir -p data/clariq
+wget https://github.com/aliannejadi/ClariQ/raw/master/data/train.tsv data/clariq/train.tsv
+wget https://github.com/aliannejadi/ClariQ/raw/master/data/dev.tsv data/clariq/dev.tsv
 
 # QReCC
 mkdir -p data/qrecc

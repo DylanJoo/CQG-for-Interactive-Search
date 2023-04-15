@@ -6,11 +6,10 @@ import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
 
-def aggregate_ff(qa, qcq, f):
-    """ 
-    Aggregate two source of data in 50/50.  
-    """
-    f.write(json.dumps({
+def aggregate_ff(qa, qcq, writer):
+    """ Aggregate two source of data in 50/50."""
+
+    writer.write(json.dumps({
         "question": qa['question'],
         "mi_response": qa['answer'],
         "titles": qa['titles'],
@@ -48,11 +47,13 @@ if __name__ == '__main__':
     # Combine the two sources
     with open(args.output, 'w') as fout:
         for i in tqdm(range(len(convqa))):
-            data_convqa = convqa[i]
-            data_convqcq = convqcq[i] if args.convqcq else None
-
-            # Setting 1: aggregate two of them with 50/50.
-            aggregate_ff(data_convqa, data_convqcq, fout)
+            # setting 0: direct target
+            # aggregate  randomly without modification
+            aggregate_ff(
+                    qa=convqa[i],
+                    qca=convqcq[i] if args.convqcq else None,
+                    writer=fout
+            )
 
             # [NOTE] Other possible settings: 
             # by c_need

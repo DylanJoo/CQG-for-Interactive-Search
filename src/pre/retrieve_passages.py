@@ -28,7 +28,7 @@ def pack_clariq_to_jsonl(args):
             "c_question": clariq_dict['question'],
             "c_answer": clariq_dict['answer'],
             "q_serp": clariq_serp[clariq_dict['initial_request']],
-            "cq_serp": clariq_serp[f"{clariq_dict['initial_request']} {clariq_dict['question']}"],
+            "ref_serp": clariq_serp[f"{clariq_dict['initial_request']} {clariq_dict['question']}"],
         }, ensure_ascii=False)+'\n')
             # "facet": clariq_dict['facet_desc'],
             # "f_serp": clariq_serp[clariq_dict['facet_desc']],
@@ -57,6 +57,7 @@ def pack_canard_to_jsonl(args):
             "question": canard_dict['rewrite'],
             "answer": canard_dict['answer'],
             "q_serp": canard_serp[canard_dict['rewrite']],
+            "ref_serp": None, 
         }, ensure_ascii=False)+'\n')
     fout.close()
 
@@ -90,7 +91,7 @@ def pack_qrecc_to_jsonl(args):
             "question": qrecc_dict['Rewrite'],
             "answer": qrecc_dict['Answer'],
             "q_serp": qrecc_serp[qrecc_dict['Rewrite']],
-            "a_serp": qrecc_serp[qrecc_dict['q_and_a']],
+            "ref_serp": qrecc_serp[qrecc_dict['q_and_a']],
         }, ensure_ascii=False)+'\n')
     fout.close()
 
@@ -122,7 +123,6 @@ if __name__ == '__main__':
     parser.add_argument("--clariq", type=str, default=None)
     parser.add_argument("--canard", type=str, default=None)
     parser.add_argument("--qrecc", type=str, default=None)
-    parser.add_argument("--collections", type=str, default=None)
     parser.add_argument("--output", default='sample.jsonl', type=str)
     # search args
     parser.add_argument("--index_dir", type=str)

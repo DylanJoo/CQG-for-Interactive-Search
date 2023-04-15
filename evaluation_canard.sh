@@ -4,7 +4,7 @@ mkdir -p evaluation
 # python3 src/pre/retrieve_passages.py \
 #     --canard data/canard/test.jsonl \
 #     --collections None \
-#     --output evaluation/canard_provenances_bm25.jsonl \
+#     --output evaluation/data/canard_provenances_bm25.jsonl \
 #     --index_dir /tmp2/jhju/indexes/odqa-psgs_w100_jsonl_tc/ \
 #     --k 100 \
 #     --k1 0.9 \
@@ -16,7 +16,7 @@ mkdir -p evaluation
 # python3 src/pre/organize_provenances.py \
 #     --questions_with_provenances evaluation/canard_provenances_bm25.jsonl \
 #     --collections /tmp2/jhju/datasets/odqa-psgs/psgs_w100.jsonl \
-#     --output evaluation/canard_qa_provenances.jsonl \
+#     --output evaluation/data/canard_qa_provenances.jsonl \
 #     --N 10
 ## (2.2) set the answer
 # python3 src/pre/organize_miresponses.py \

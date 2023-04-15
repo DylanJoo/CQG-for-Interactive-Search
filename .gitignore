@@ -7,7 +7,7 @@ removeme*
 
 # raw data
 data/canard/*
-data/clariq/*
+!data/clariq/*
 data/quac/*
 data/qrecc/*
 !data/clariq/train.tsv
@@ -25,3 +25,6 @@ fidmrg/
 # evaluation data (coqa)
 evaluation/*
 evaluation/README.md
+
+# archived codes
+**/archived/
