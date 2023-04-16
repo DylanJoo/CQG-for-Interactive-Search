@@ -3,7 +3,6 @@ import argparse
 import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset, Dataset
-from pyserini.search.lucene import LuceneSearcher
 
 def pack_clariq_to_jsonl(args):
     df = pd.read_csv(args.clariq, delimiter='\t')
@@ -17,7 +16,7 @@ def pack_clariq_to_jsonl(args):
 
     # Get queries for search
     queries = clariq['initial_request'] + clariq['q_and_cq']
-    clariq_serp = sparse_retrieve(queries, args)
+    clariq_serp = retrieve(queries, args)
 
     # Add SERP to clariq dataset
     fout = open(args.output, 'w') 
@@ -45,7 +44,7 @@ def pack_canard_to_jsonl(args):
 
     # Search 
     ## Setting 1: TopK provenances
-    canard_serp = sparse_retrieve(queries, args)
+    canard_serp = retrieve(queries, args)
     ## [NOTE] Setting 2: dense retrieve/cluster retrieve
     # canard_serp = ??
 
@@ -77,7 +76,7 @@ def pack_qrecc_to_jsonl(args):
     # Get queries and search
     ## Setting 1: Rewritten queries
     queries = qrecc['Rewrite'] + qrecc['q_and_a']
-    qrecc_serp = sparse_retrieve(queries, args)
+    qrecc_serp = retrieve(queries, args)
 
     ## [NOTE] Other possible strategy:
     ## Conversational queries
@@ -95,18 +94,17 @@ def pack_qrecc_to_jsonl(args):
         }, ensure_ascii=False)+'\n')
     fout.close()
 
-def sparse_retrieve(queries, args):
-    """ This step can be changed to any other text ranking models 
+def retrieve(queries, args):
 
-    Returns
-    -------
-    serp: `dict`
-        Query and the key, and the retrieved result is the value.
-        Result is a list of two lists: docid list and their scores.
-    """
-    # bm25 search
-    searcher = LuceneSearcher(args.index_dir)
-    searcher.set_bm25(k1=args.k1, b=args.b)
+    if args.dense_retrieval:
+        # FAISS search
+        from pyserini.search import FaissSearcher
+        searcher = FaissSearcher(args.index_dir, args.q_encoder)
+    else:
+        # bm25 search
+        from pyserini.search.lucene import LuceneSearcher
+        searcher = LuceneSearcher(args.index_dir)
+        searcher.set_bm25(k1=args.k1, b=args.b)
 
     # serp
     serp = {}
@@ -116,7 +114,7 @@ def sparse_retrieve(queries, args):
         serp[q] = list(map(list, zip(*results)))
 
     return serp
-    
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # data args
@@ -126,6 +124,8 @@ if __name__ == '__main__':
     parser.add_argument("--output", default='sample.jsonl', type=str)
     # search args
     parser.add_argument("--index_dir", type=str)
+    parser.add_argument("--dense_retrieval", default=False, action='store_true')
+    parser.add_argument("--q-encoder", type=str, default='facebook/dpr-question_encoder-multiset-base')
     parser.add_argument("--k", default=100, type=int)
     parser.add_argument("--k1",default=0.9, type=float)
     parser.add_argument("--b", default=0.4, type=float)

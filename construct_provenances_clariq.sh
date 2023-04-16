@@ -1,6 +1,6 @@
 ## (1) retrieve K provenances
 ### Setting: passages indexed using contents and title
-### [ALTER] indexing using contents only
+### [TODO] indexing using contents only
 python3 src/pre/retrieve_passages.py \
     --clariq data/clariq/train.tsv \
     --collections None \
@@ -9,6 +9,14 @@ python3 src/pre/retrieve_passages.py \
     --k 100 \
     --k1 0.9 \
     --b 0.4
+### [ALTER] dense indexing
+python3 src/pre/retrieve_passages.py \
+    --clariq data/clariq/train.tsv \
+    --collections None \
+    --output data/clariq_provenances_tc.jsonl \
+    --dense_retrieval \
+    --index_dir /tmp2/jhju/indexes/odcqa-psgs \
+    --k 100 
 
 ## (2) set the provenances for FiD
 python3 src/pre/organize_provenances.py \
