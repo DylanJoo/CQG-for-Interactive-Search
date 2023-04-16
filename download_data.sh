@@ -1,7 +1,12 @@
+# Corpus
+mkdir -p data/corpus
+wget https://zenodo.org/record/6149599/files/data/wikipedia_split/full_wiki_segments.tsv -O data/corpus/full_wiki_segments.tsv
+## corpus preprocess
+
 # ClariQ
 mkdir -p data/clariq
-wget https://github.com/aliannejadi/ClariQ/raw/master/data/train.tsv data/clariq/train.tsv
-wget https://github.com/aliannejadi/ClariQ/raw/master/data/dev.tsv data/clariq/dev.tsv
+wget https://github.com/aliannejadi/ClariQ/raw/master/data/train.tsv -O data/clariq/train.tsv
+wget https://github.com/aliannejadi/ClariQ/raw/master/data/dev.tsv -O data/clariq/dev.tsv
 
 # QReCC
 mkdir -p data/qrecc
