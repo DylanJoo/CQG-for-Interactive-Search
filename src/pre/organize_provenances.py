@@ -38,7 +38,7 @@ def overlapped_provenances(plist_q, plist_qcq, N):
 def exclusive_provenances(plist_q, plist_qa, N):
     """ Organize the passages with exclusion of the QA retrieved.
     as the final provencens """
-    # the overlapped
+    # the exclusion
     serp = [docid for docid in plist_q if docid not in plist_qa]
     doc_q = [docid for docid in plist_q if docid not in serp]
     # doc_qa = [docid for docid in plist_qa if docid not in serp]
@@ -68,7 +68,7 @@ if __name__ == '__main__':
             ## Overlapped provenance
             serp_list0, q_serp_scores = data.pop('q_serp')
             serp_list1, serp_scores1 = data.pop('ref_serp', None)
-            assert (serp_list1 is not None) == (args.overlapped and args.exclusive), 'Cannot find two SERP in the data dict.'
+            assert (serp_list1 is not None) == (not args.overlapped or not args.exclusive), 'Cannot find two SERP in the data dict.'
 
             if args.overlapped:
                 serp = overlapped_provenances(serp_list0, serp_list1, args.N)

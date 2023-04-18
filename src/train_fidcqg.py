@@ -13,7 +13,6 @@ from transformers import (
 )
 from transformers import T5ForConditionalGeneration
 from model import FiDT5
-from data import clariq_cqg
 from data import DataCollatorForCQG
 from datasets import load_dataset
 
@@ -49,7 +48,7 @@ class OurDataArguments:
     preprocessing_num_workers: Optional[int] = field(default=None)
     # Customized arguments
     train_file: Optional[str] = field(default='data/train_cqg_v0.sample.train.jsonl')
-    eval_file: Optional[str] = field(default='data/train_cqg_v0.sample.eval.jsonl')
+    eval_file: Optional[str] = field(default=None)
     max_length: int = field(default=256)
 
 @dataclass
@@ -95,17 +94,18 @@ def main():
     model.set_checkpoint(model_args.use_checkpoint)
 
     ## dataset 
-    ### [TODO] simplify this stage to load as N-passages-selection is moved to another stage.
-    dataset = clariq_cqg(data_args.train_file, model_args.n_contexts)
     from datasets import disable_caching
     disable_caching()
+    dataset = load_dataset('json', data_files=data_args.train_file)
+
     N = len(dataset['train'])
-    if training_args.do_eval and data_args.eval_file is None:
-        dataset['eval'] = dataset['train'].select(
-                random.sample(range(N), 100)
-        )
-    else:
-        dataset['eval'] = load_dataset('json', data_files=data_args.eval_file)['train']
+    if training_args.do_eval:
+        if data_args.eval_file:
+            dataset['eval'] = load_dataset('json', data_files=data_args.eval_file)['train']
+        else:
+            dataset['eval'] = dataset['train'].select(
+                    random.sample(range(N), 100)
+            )
 
     ## data collator
     datacollator = DataCollatorForCQG(

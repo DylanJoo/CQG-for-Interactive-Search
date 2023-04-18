@@ -97,8 +97,9 @@ def pack_qrecc_to_jsonl(args):
 def retrieve(queries, args):
 
     if args.dense_retrieval:
-        # FAISS search
-        from pyserini.search import FaissSearcher
+        # FAISS search with DPR
+        from pyserini.search import FaissSearcher, DprQueryEncoder
+        query_encoder = DprQueryEncoder(args.q_encoder, device=args.device)
         searcher = FaissSearcher(args.index_dir, args.q_encoder)
     else:
         # bm25 search
@@ -140,4 +141,3 @@ if __name__ == '__main__':
     if args.qrecc:
         pack_qrecc_to_jsonl(args)
         
-

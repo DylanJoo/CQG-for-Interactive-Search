@@ -12,7 +12,6 @@ python3 src/pre/retrieve_passages.py \
 ### [ALTER] dense indexing
 python3 src/pre/retrieve_passages.py \
     --clariq data/clariq/train.tsv \
-    --collections None \
     --output data/clariq_provenances_tc.jsonl \
     --dense_retrieval \
     --index_dir /tmp2/jhju/indexes/odcqa-psgs \
