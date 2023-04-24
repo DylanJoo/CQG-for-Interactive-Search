@@ -1,10 +1,8 @@
 ## (1) retrieve K provenances
 ### Setting: passages indexed using contents and title
 ### [TODO] indexing using contents only
-
 # python3 src/pre/retrieve_passages.py \
 #     --clariq data/clariq/train.tsv \
-#     --collections None \
 #     --output data/clariq_provenances_tc.jsonl \
 #     --index_dir /tmp2/jhju/indexes/odcqa-psgs \
 #     --k 100 \
@@ -13,15 +11,15 @@
 #     --index_dir /tmp2/jhju/indexes/odcqa-psgs \
 
 ### [ALTER] dense indexing
-python3 src/pre/retrieve_passages.py \
+python3 src/pre/retrieve_passages2.py \
     --clariq data/clariq/train.tsv \
-    --output data/clariq_provenances_tc.jsonl \
+    --output data/clariq_provenances_dpr.jsonl \
     --dense_retrieval \
     --q-encoder facebook/dpr-question_encoder-multiset-base \
     --device cuda:2 \
-    --batch_size 128 \
-    --threads 16 \
-    --index_dir /tmp2/jhju/indexes/full_wiki_segments_dpr \
+    --batch_size 32 \
+    --threads 4 \
+    --index_dir /home/jhju/indexes/full_wiki_segments_dpr \
     --k 100 
 
 ## (2) set the provenances for FiD

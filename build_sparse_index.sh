@@ -1,3 +1,8 @@
+python3 src/tools/convert_tsv_to_jsonl.py \
+  --path_tsv /home/jhju/datasets/full_wiki_segments.tsv  \
+  --path_jsonl /home/jhju/datasets/full_wiki_segments/tc/full_wiki_segments.jsonl \
+  --add_title 
+
 # indexing for wiki corpus (contents)
 # python3 -m pyserini.index.lucene \
 #   --collection JsonCollection \
