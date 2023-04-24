@@ -1,26 +1,33 @@
 ## (1) retrieve K provenances
 ### Setting: passages indexed using contents and title
 ### [TODO] indexing using contents only
-python3 src/pre/retrieve_passages.py \
-    --clariq data/clariq/train.tsv \
-    --collections None \
-    --output data/clariq_provenances_tc.jsonl \
-    --index_dir /tmp2/jhju/indexes/odcqa-psgs \
-    --k 100 \
-    --k1 0.9 \
-    --b 0.4
+
+# python3 src/pre/retrieve_passages.py \
+#     --clariq data/clariq/train.tsv \
+#     --collections None \
+#     --output data/clariq_provenances_tc.jsonl \
+#     --index_dir /tmp2/jhju/indexes/odcqa-psgs \
+#     --k 100 \
+#     --k1 0.9 \
+#     --b 0.4
+#     --index_dir /tmp2/jhju/indexes/odcqa-psgs \
+
 ### [ALTER] dense indexing
 python3 src/pre/retrieve_passages.py \
     --clariq data/clariq/train.tsv \
     --output data/clariq_provenances_tc.jsonl \
     --dense_retrieval \
-    --index_dir /tmp2/jhju/indexes/odcqa-psgs \
+    --q-encoder facebook/dpr-question_encoder-multiset-base \
+    --device cuda:2 \
+    --batch_size 128 \
+    --threads 16 \
+    --index_dir /tmp2/jhju/indexes/full_wiki_segments_dpr \
     --k 100 
 
 ## (2) set the provenances for FiD
-python3 src/pre/organize_provenances.py \
-    --questions_with_provenances data/clariq_provenances_tc.jsonl \
-    --collections /tmp2/jhju/datasets/odcqa-psgs/full_wiki_segments.jsonl \
-    --output data/train_fidcqg_v0.jsonl \
-    --N 10 \
-    --overlapped
+# python3 src/pre/organize_provenances.py \
+#     --questions_with_provenances data/clariq_provenances_tc.jsonl \
+#     --collections /tmp2/jhju/datasets/odcqa-psgs/full_wiki_segments.jsonl \
+#     --output data/train_fidcqg_v0.jsonl \
+#     --N 10 \
+#     --overlapped

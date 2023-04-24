@@ -101,18 +101,35 @@ def retrieve(queries, args):
         from pyserini.search import FaissSearcher, DprQueryEncoder
         query_encoder = DprQueryEncoder(args.q_encoder, device=args.device)
         searcher = FaissSearcher(args.index_dir, args.q_encoder)
+
+        ## batching function
+        def batch(iterable, n):
+            l = len(iterable)
+            for ndx in range(0, l, n):
+                yield iterable[ndx:min(ndx + n, l)]
+
+        batch_queries = batch(queries, args.batch_size)
+
+        # serp
+        serp = {}
+        for qs in tqdm(batch_queries):
+            ### use the query text as index.
+            results = searcher.batch_search(qs, qs, k=args.k, threads=args.threads)
+            results = [(id_, results[id_]) for id_ in qs]
+            for topic, hits in results:
+                serp[topic] = [hit for hit in hits if hit.docid != topic]
     else:
         # bm25 search
         from pyserini.search.lucene import LuceneSearcher
         searcher = LuceneSearcher(args.index_dir)
         searcher.set_bm25(k1=args.k1, b=args.b)
 
-    # serp
-    serp = {}
-    for q in tqdm(queries):
-        hits = searcher.search(q, k=args.k)
-        results = [(hit.docid, hit.score) for hit in hits]
-        serp[q] = list(map(list, zip(*results)))
+        # serp
+        serp = {}
+        for q in tqdm(queries):
+            hits = searcher.search(q, k=args.k)
+            results = [(hit.docid, hit.score) for hit in hits]
+            serp[q] = list(map(list, zip(*results)))
 
     return serp
 
@@ -126,6 +143,9 @@ if __name__ == '__main__':
     # search args
     parser.add_argument("--index_dir", type=str)
     parser.add_argument("--dense_retrieval", default=False, action='store_true')
+    parser.add_argument("--batch_size", default=1, type=int)
+    parser.add_argument("--device", default='cuda', type=str)
+    parser.add_argument("--threads", default=1, type=int)
     parser.add_argument("--q-encoder", type=str, default='facebook/dpr-question_encoder-multiset-base')
     parser.add_argument("--k", default=100, type=int)
     parser.add_argument("--k1",default=0.9, type=float)
