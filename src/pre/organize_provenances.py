@@ -19,8 +19,11 @@ def load_collections(path):
     print("Done!")
     return collections
 
-def overlapped_provenances(plist_q, plist_qcq, N):
+def overlapped_provenances(plist_q, plist_qcq, N, topk=100):
     """ Organize the overlapped passages as the final provencens """
+    plist_q = plist_q[:topk]
+    plist_qcq = plist_qcq[:topk]
+
     # the overlapped
     serp = [docid for docid in plist_q if docid in plist_qcq]
     doc_q = [docid for docid in plist_q if docid not in serp]
@@ -52,6 +55,7 @@ if __name__ == '__main__':
     parser.add_argument("--collections", type=str)
     parser.add_argument("--output", default='sample.jsonl', type=str)
     parser.add_argument("--N", default=20, type=int)
+    parser.add_argument("--topk", default=100, type=int)
     parser.add_argument("--overlapped", default=False, action='store_true')
     parser.add_argument("--exclusive", default=False, action='store_true')
     args = parser.parse_args()
@@ -71,7 +75,7 @@ if __name__ == '__main__':
             assert (serp_list1 is not None) == (not args.overlapped or not args.exclusive), 'Cannot find two SERP in the data dict.'
 
             if args.overlapped:
-                serp = overlapped_provenances(serp_list0, serp_list1, args.N)
+                serp = overlapped_provenances(serp_list0, serp_list1, args.N, args.topk)
             elif args.exclusive:
                 serp = exclusive_provenances(serp_list0, serp_list1, args.N)
             else:

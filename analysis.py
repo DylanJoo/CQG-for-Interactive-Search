@@ -2,7 +2,7 @@ import re
 import json
 import numpy as np
 
-f = open('data/clariq_provenances_tc.jsonl', 'r')
+f = open('data/clariq_provenances_dpr.jsonl', 'r')
 # "question": clariq_dict['initial_request'],
 # "facet": clariq_dict['facet_desc'],
 # "c_need": clariq_dict['clarification_need'],
@@ -22,10 +22,10 @@ for i, line in enumerate(f):
 
     # serp
     q_serp, q_serp_scores = data['q_serp']
-    qt = set([re.sub(r"\d+", "", t) for t in q_serp])
+    qt = set([t.split('#')[0] for t in q_serp])
 
     try:
-        cqt = set([re.sub(r"\d+", "", t) for t in cq_serp])
+        cqt = set([t.split('#')[0] for t in cq_serp])
         cq_serp, cq_serp_scores = data['cq_serp']
     except:
         cqt = qt

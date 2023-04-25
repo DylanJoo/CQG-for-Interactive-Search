@@ -4,6 +4,7 @@ logs/*
 *swp
 src/__pycache__/*
 removeme*
+wandb/
 
 # raw data
 data/canard/*
@@ -19,8 +20,8 @@ data/*jsonl
 !data/train_cqg_v0.sample.eval.jsonl
 
 # checkpoints
-fidcqg/
-fidmrg/
+fidcqg*/
+fidmrg*/
 
 # evaluation data (coqa)
 evaluation/*

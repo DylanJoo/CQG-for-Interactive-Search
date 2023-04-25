@@ -17,7 +17,7 @@ from data import DataCollatorForCQG
 from datasets import load_dataset
 
 import os
-os.environ["WANDB_DISABLED"] = "true"
+os.environ["WANDB_DISABLED"] = "false"
 
 @dataclass
 class OurHFModelArguments:
