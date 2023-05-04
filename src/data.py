@@ -13,6 +13,7 @@ import random
 import json
 import numpy as np
 import pandas as pd
+from copy import copy
 
 from dataclasses import dataclass, field
 from typing import Optional, Union, List, Dict, Tuple, Any
@@ -20,6 +21,7 @@ from transformers.tokenization_utils_base import (
         PreTrainedTokenizerBase, 
         PaddingStrategy
 )
+from utils import TfidfTextScorer
 
 @dataclass
 class DataCollatorForCQG:
@@ -34,6 +36,7 @@ class DataCollatorForCQG:
     # spec
     is_train: Union[bool, str] = False
     n_contexts: Union[int, str] = 1
+    scorer: Union[TfidfTextScorer] = None
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
 
@@ -77,6 +80,27 @@ class DataCollatorForCQG:
             inputs['labels'] = target_ids
             inputs['decoder_attention_mask'] = target_mask
 
+            if self.scorer is not None:
+                inputs['label_weights'] = torch.ones(
+                        targets['input_ids'].shape
+                )
+
+                # 1. fetch tfidf scores
+                scores = self.scorer.get_scores(
+                        [ex['c_question'] for ex in features]
+                )
+                # 2. arrange the scores for the (tokenized) words
+                for i in range(len(targets)):
+                    word_idx_of_token = [
+                            idx if idx is not None else -1 \
+                                    for idx in targets.word_ids(i)
+                    ]
+                    assert max(word_idx_of_token) == len(scores[i])-1, \
+                            'Inconsistent length of scores and tokens'
+                    inputs['label_weights'][i, :] = \
+                            torch.tensor(scores[i]+[0]).take(
+                                    torch.tensor(word_idx_of_token)
+                            )
         else:
             inputs['c_question'] =  [ex['c_question'] for ex in features]
             inputs['question'] =  [ex['question'] for ex in features]

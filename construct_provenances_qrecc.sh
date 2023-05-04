@@ -11,9 +11,9 @@ python3 src/pre/retrieve_passages2.py \
     --output data/qrecc_provenances_dpr.jsonl \
     --dense_retrieval \
     --q-encoder facebook/dpr-question_encoder-multiset-base \
-    --device cuda:2 \
-    --batch_size 128 \
-    --threads 32 \
+    --device cuda \
+    --batch_size 32 \
+    --threads 8 \
     --index_dir /home/jhju/indexes/full_wiki_segments_dpr \
     --k 100 
 
