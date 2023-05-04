@@ -5,7 +5,7 @@ from torch.nn import CrossEntropyLoss
 class TrainerForCQG(Trainer):
     # customized loss counting function
     def compute_loss(self, model, inputs, return_outputs=False):
-        # [NOTE] JH: For the weighted purpose, 
+        # [REVISE] JH: For the weighted purpose, 
         # deactivating the feature of label smoothing
 
         labels = inputs.pop("labels")
@@ -15,7 +15,7 @@ class TrainerForCQG(Trainer):
         outputs = model(**inputs, decoder_input_ids=decoder_input_ids)
         lm_logits = outputs.logits
 
-        ## NLL Loss (weighted)
+        ## [REVISE] NLL Loss (weighted)
         if label_weights is not None:
             loss_fct = CrossEntropyLoss(ignore_index=-100, reduction='none')
             labels = labels.to(lm_logits.device)
@@ -40,6 +40,22 @@ class TrainerForCQG(Trainer):
             self._past = outputs[self.args.past_index]
 
         loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
+
+
+        # [REVISE]
+        if self.state.global_step % 10 == 1:
+            with torch.no_grad():
+                outputs = model.generate(
+                        inputs.input_ids, 
+                        inputs.attention_mask, 
+                        max_length=30
+                )
+                for k, o in enumerate(outputs):
+                    i = inputs.input_ids[k, 1, :]
+                    src = model.tokenizer.decode(i, skip_special_tokens=True)
+                    tgt = model.tokenizer.decode(o, skip_special_tokens=True)
+                    print("\n\n", src)
+                    print("-->", tgt)
 
         return (loss, outputs) if return_outputs else loss
 

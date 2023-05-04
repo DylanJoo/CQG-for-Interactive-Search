@@ -15,9 +15,10 @@ import numpy as np
 from model_revise import cross_attention_forward
 
 class FiDT5(transformers.T5ForConditionalGeneration):
-    def __init__(self, config):
+    def __init__(self, config, tokenizer=None):
         super().__init__(config)
         self.wrap_encoder()
+        self.tokenizer = tokenizer
 
     def forward_(self, **kwargs):
         if 'input_ids' in kwargs:

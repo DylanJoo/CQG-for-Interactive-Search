@@ -86,7 +86,7 @@ def main():
     config = AutoConfig.from_pretrained(hfmodel_args.config_name)
     tokenizer = AutoTokenizer.from_pretrained(hfmodel_args.tokenizer_name)
     t5 = T5ForConditionalGeneration.from_pretrained(hfmodel_args.model_name_or_path)
-    model = FiDT5(t5.config)
+    model = FiDT5(t5.config, tokenizer=tokenizer)
     model.load_t5(t5.state_dict())
     
     ## [REMOVE] add generation config

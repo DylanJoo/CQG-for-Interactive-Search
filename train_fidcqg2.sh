@@ -9,9 +9,9 @@ python3 src/train_fidcqg2.py \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
     --max_length 128 \
-    --max_steps 10000 \
-    --save_steps 2000 \
-    --eval_steps 2000 \
+    --max_steps 4000 \
+    --save_steps 200 \
+    --eval_steps 200 \
     --do_train true \
     --do_eval false \
     --dataloader_num_workers 0 \
