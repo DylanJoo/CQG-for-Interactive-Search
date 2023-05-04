@@ -1,4 +1,3 @@
-# Author: Dylan
 # This source code is edited based on the FiD's code.
 # The FiD's codes are made for standard QA tasks.
 # And this code is made for Conversational QA.
