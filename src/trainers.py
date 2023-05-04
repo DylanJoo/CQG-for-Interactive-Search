@@ -52,10 +52,14 @@ class TrainerForCQG(Trainer):
                 )
                 for k, o in enumerate(outputs):
                     i = inputs.input_ids[k, 1, :]
+                    l = labels.detach().cpu().numpy()[k, :]
+                    l = [ll for ll in l if ll != -100]
                     src = model.tokenizer.decode(i, skip_special_tokens=True)
                     tgt = model.tokenizer.decode(o, skip_special_tokens=True)
+                    lbl = model.tokenizer.decode(l, skip_special_tokens=True)
                     print("\n\n", src)
                     print("-->", tgt)
+                    print("==>", lbl)
 
         return (loss, outputs) if return_outputs else loss
 

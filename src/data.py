@@ -81,7 +81,7 @@ class DataCollatorForCQG:
             inputs['decoder_attention_mask'] = target_mask
 
             if self.scorer is not None:
-                inputs['label_weights'] = torch.ones(
+                inputs['label_weights'] = torch.zeros(
                         targets['input_ids'].shape
                 )
 
@@ -91,16 +91,15 @@ class DataCollatorForCQG:
                 )
                 # 2. arrange the scores for the (tokenized) words
                 for i in range(len(targets)):
-                    word_idx_of_token = [
-                            idx if idx is not None else -1 \
-                                    for idx in targets.word_ids(i)
-                    ]
+                    word_idx_of_token = [idx if idx is not None else -1 \
+                                    for idx in targets.word_ids(i)]
                     assert max(word_idx_of_token) == len(scores[i])-1, \
                             'Inconsistent length of scores and tokens'
                     inputs['label_weights'][i, :] = \
                             torch.tensor(scores[i]+[0]).take(
                                     torch.tensor(word_idx_of_token)
                             )
+                    a=torch.tensor(scores[i]+[0]).take(torch.tensor(word_idx_of_token))
         else:
             inputs['c_question'] =  [ex['c_question'] for ex in features]
             inputs['question'] =  [ex['question'] for ex in features]
