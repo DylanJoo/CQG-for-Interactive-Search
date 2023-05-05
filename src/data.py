@@ -29,7 +29,7 @@ class DataCollatorForCQG:
     padding: Union[bool, str, PaddingStrategy] = True
     truncation: Union[bool, str] = True
     max_length: Optional[int] = 512
-    max_length_answer: Optional[int] = 64
+    max_cq_length: Optional[int] = 64
     pad_to_multiple_of: Optional[int] = None
     return_tensors: str = "pt"
     padding: Union[bool, str] = True
@@ -68,7 +68,7 @@ class DataCollatorForCQG:
         if self.is_train:
             targets = self.tokenizer.batch_encode_plus(
                     [ex['c_question'] for ex in features],
-                    max_length=self.max_length_answer,
+                    max_length=self.max_cq_length,
                     padding=True,
                     return_tensors=self.return_tensors,
                     truncation=True,

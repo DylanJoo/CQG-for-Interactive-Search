@@ -9,14 +9,14 @@ from model import FiDT5
 from data import DataCollatorForCQG
 from torch.utils.data import DataLoader
 
-def generate(inputs, max_length, device, model, tokenizer, f):
+def generate(inputs, device, model, tokenizer, f, **generation_kwargs):
 
     source_questions = batch.pop('question')
     target = batch.pop('c_question')
     for k in inputs:
         inputs[k] = inputs[k].cuda(device)
 
-    outputs = model.generate(**inputs, max_length=max_length)
+    outputs = model.generate(**inputs, **generation_kwargs)
     scores = model.get_crossattention_scores(batch['attention_mask']).tolist()
 
     # write outputs
@@ -44,6 +44,10 @@ if __name__ == '__main__':
     parser.add_argument("--n_contexts", type=int, default=10)
     parser.add_argument("--max_length", type=int, default=50)
     parser.add_argument("--device", type=str, default='cuda')
+    # generation configs
+    parser.add_argument("--num_beams", type=int, default=1)
+    parser.add_argument("--do_sample", action='store_true', default=False)
+    parser.add_argument("--top_k", type=int, default=50)
     args = parser.parse_args()
 
     # load model/tokenizer
@@ -59,7 +63,8 @@ if __name__ == '__main__':
             tokenizer=tokenizer,
             padding=True,
             is_train=False,
-            max_length=args.max_length,
+            max_length=128,
+            max_cq_length=args.max_length,
             n_contexts=args.n_contexts
     )
     dataloader = DataLoader(
@@ -77,10 +82,13 @@ if __name__ == '__main__':
 
             model.reset_score_storage()
             generate(inputs=batch, 
-                     max_length=args.max_length,
                      device=args.device,
                      model=model, 
                      tokenizer=tokenizer,
-                     f=f)
+                     f=f,
+                     max_length=args.max_length,
+                     num_beams=args.num_beams,
+                     do_sample=args.do_sample,
+                     top_k=args.top_k)
             model.reset_score_storage()
 

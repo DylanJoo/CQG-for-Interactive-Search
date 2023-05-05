@@ -31,17 +31,23 @@ mkdir -p evaluation/data
 
 ## (3) Generate clarification questions
 for model in fidcqg*;do
-    for version in v0 v0_rand20;do
-        ckpt=2000
+    # for version in v0_rand20;do
+    for version in v0;do
+        ckpt=4000
         python3 src/inference_fidcqg.py \
             --jsonl_file evaluation/data/dev_fidcqg_${version}.jsonl \
             --output_file evaluation/cqg/dev_${model}-${ckpt}-${version}_pred.jsonl \
-            --batch_size 8 \
+            --batch_size 4 \
             --used_checkpoint ${model}/checkpoint-${ckpt}/ \
             --used_tokenizer t5-base \
             --calculate_crossattention \
             --n_contexts 10 \
-            --max_length 256 \
-            --device 'cuda:2'
+            --max_length 20 \
+            --device 'cuda:2' \
+            --do_sample \
+            --top_k 10
+        python3 src/tools/convert_jsonl_to_txt.py \
+            --path_jsonl evaluation/cqg/dev_${model}-${ckpt}-${version}_pred.jsonl \
+            --path_txt evaluation/cqg/dev_${model}-${version}_pred.txt
     done
 done

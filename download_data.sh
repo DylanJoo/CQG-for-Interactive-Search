@@ -1,4 +1,5 @@
 # Corpus
+# refer to: https://github.com/McGill-NLP/topiocqa/blob/main/download_data.py
 mkdir -p data/corpus
 wget https://zenodo.org/record/6149599/files/data/wikipedia_split/full_wiki_segments.tsv -O data/corpus/full_wiki_segments.tsv
 ## corpus preprocess
