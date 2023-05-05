@@ -93,13 +93,13 @@ class DataCollatorForCQG:
                 for i in range(len(targets)):
                     word_idx_of_token = [idx if idx is not None else -1 \
                                     for idx in targets.word_ids(i)]
+                    word_idx_of_token[word_idx_of_token.index(-1)] = -2
                     assert max(word_idx_of_token) == len(scores[i])-1, \
                             'Inconsistent length of scores and tokens'
                     inputs['label_weights'][i, :] = \
-                            torch.tensor(scores[i]+[0]).take(
+                            torch.tensor(scores[i]+[1, 0]).take(
                                     torch.tensor(word_idx_of_token)
                             )
-                    a=torch.tensor(scores[i]+[0]).take(torch.tensor(word_idx_of_token))
         else:
             inputs['c_question'] =  [ex['c_question'] for ex in features]
             inputs['question'] =  [ex['question'] for ex in features]

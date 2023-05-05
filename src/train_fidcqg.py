@@ -38,6 +38,9 @@ class OurModelArguments:
     n_contexts: Optional[int] = field(default=3, metadata={
         "help": "the considered context (title and passage)", 
     })
+    tfidf_weighted: bool = field(default=False)
+    tfidf_weighted_stopwords: Optional[str] = field(default=None)
+
 
 @dataclass
 class OurDataArguments:
@@ -86,7 +89,7 @@ def main():
     config = AutoConfig.from_pretrained(hfmodel_args.config_name)
     tokenizer = AutoTokenizer.from_pretrained(hfmodel_args.tokenizer_name)
     t5 = T5ForConditionalGeneration.from_pretrained(hfmodel_args.model_name_or_path)
-    model = FiDT5(t5.config)
+    model = FiDT5(t5.config, tokenizer=tokenizer)
     model.load_t5(t5.state_dict())
     
     ## [REMOVE] add generation config
@@ -98,6 +101,10 @@ def main():
     disable_caching()
     dataset = load_dataset('json', data_files=data_args.train_file)
 
+    ## [DEBUG] [START]
+    dataset = dataset.map()
+    ## [DEBUG] [END]
+
     N = len(dataset['train'])
     if training_args.do_eval:
         if data_args.eval_file:
@@ -107,6 +114,12 @@ def main():
                     random.sample(range(N), 100)
             )
 
+    ## weighted generation loss from tfidf weight
+    if model_args.tfidf_weighted:
+        from utils import TfidfTextScorer
+        tfidfscorer = TfidfTextScorer()
+        tfidfscorer.fit_corpus(dataset['train']['c_question'])
+
     ## data collator
     datacollator = DataCollatorForCQG(
             tokenizer=tokenizer, 
@@ -114,11 +127,13 @@ def main():
             max_length=data_args.max_length,
             return_tensors='pt',
             is_train=True,
-            n_contexts=model_args.n_contexts
+            n_contexts=model_args.n_contexts,
+            scorer=tfidfscorer if model_args.tfidf_weighted else None
     )
 
     ## Trainer
-    trainer = Trainer(
+    from trainers import TrainerForCQG
+    trainer = TrainerForCQG(
             model=model, 
             args=training_args,
             train_dataset=dataset['train'],
