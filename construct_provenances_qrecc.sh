@@ -1,21 +1,23 @@
 ## (1) retrieve K provenances
-# python3 src/pre/retrieve_passages.py \
-#     --qrecc data/qrecc/qrecc_train.json \
-#     --output data/qrecc_provenances_tc.jsonl \
-#     --index_dir /tmp2/jhju/indexes/odcqa-psgs \
-#     --k 100 \
-#     --k1 0.9 \
-#     --b 0.4
+### Lucene index using contents with title (title content)
 python3 src/pre/retrieve_passages2.py \
     --qrecc data/qrecc/qrecc_train.json \
-    --output data/qrecc_provenances_dpr.jsonl \
-    --dense_retrieval \
-    --q-encoder facebook/dpr-question_encoder-multiset-base \
-    --device cuda \
-    --batch_size 32 \
-    --threads 8 \
-    --index_dir /home/jhju/indexes/full_wiki_segments_dpr \
+    --output data/qrecc_provenances_lucene.jsonl \
+    --k1 0.9 -b 0.4 \
+    --index_dir /home/jhju/indexes/full_wiki_segments_lucene \
     --k 100 
+
+### FAISS index using contents with title (title [SEP] content)
+# python3 src/pre/retrieve_passages2.py \
+#     --qrecc data/qrecc/qrecc_train.json \
+#     --output data/qrecc_provenances_dpr.jsonl \
+#     --dense_retrieval \
+#     --q-encoder facebook/dpr-question_encoder-multiset-base \
+#     --device cuda \
+#     --batch_size 32 \
+#     --threads 8 \
+#     --index_dir /home/jhju/indexes/full_wiki_segments_dpr \
+#     --k 100 
 
 ## (2) set the provenances for FiD
 # python3 src/pre/organize_provenances.py \
