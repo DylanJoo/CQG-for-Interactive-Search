@@ -5,29 +5,36 @@ import numpy as np
 import loader
 
 def dense_retrieve(queries, args):
-    pass
-#     from pyserini.search import FaissSearcher, DprQueryEncoder
-#     query_encoder = DprQueryEncoder(args.q_encoder, device=args.device)
-#     searcher = FaissSearcher(args.index_dir, args.q_encoder)
-#
-#     # serp
-#     qs = []
-#     serp = {}
-#     for index, q in enumerate(tqdm(queries, total=len(queries))):
-#         qs.append(q)
-#         # form a batch
-#         if (index + 1) % args.batch_size == 0 or \
-#                 index == len(queries) - 1:
-#             results = searcher.batch_search(qs, qs, k=args.k, threads=args.threads)
-#
-#             # attach to the dictionary
-#             for q in tqdm(qs):
-#                 result = [(hit.docid, float(hit.score)) for hit in results[q]]
-#                 serp[q] = list(map(list, zip(*result)))
-#             qs.clear()
-#             results.clear()
-#         else:
-#             continue
+    from pyserini.search import FaissSearcher, ContrieverQueryEncoder
+    query_encoder = \
+            ContrieverQueryEncoder(args.q_encoder, device=args.device)
+    searcher = FaissSearcher(args.index_dir, args.q_encoder)
+    if torch.cuda.is_available():
+        searcher.query_encoder.model.to(args.device)
+        searcher.query_encoder.device = args.device
+
+    # serp
+    qs = []
+    serp = {}
+    for index, q in enumerate(tqdm(queries, total=len(queries))):
+        batch_queries.append(q)
+        # form a batch
+        if (len(batch_queries) % args.batch_size == 0 ) or \
+                (index == len(queries) - 1):
+            results = searcher.batch_search(
+                    batch_queries, batch_queries, 
+                    k=args.k, threads=args.threads
+            )
+
+            for q_ in tqdm(batch_queries):
+                result = [(hit.docid, float(hit.score)) for hit in results[q_]]
+                serp[q_] = list(map(list, zip(*result)))
+
+            # clear
+            batch_queries.clear()
+            results.clear()
+        else:
+            continue
 
 def sparse_retrieve(queries, args):
     from pyserini.search.lucene import LuceneSearcher

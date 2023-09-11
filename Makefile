@@ -16,23 +16,23 @@ index_wiki_corpus_bm25:
 	  --threads 8
 
 construct_serp_clariq:
+	# python3 src/data_augmentation/retrieve_passages.py \
+	#     --clariq data/clariq/train.tsv \
+	#     --output data/clariq_provenances_bm25.jsonl \
+	#     --k1 0.9 --b 0.4 \
+	#     --index_dir ${INDEX_DIR} \
+	#     --k 100
+	# contriever
 	python3 src/data_augmentation/retrieve_passages.py \
 	    --clariq data/clariq/train.tsv \
-	    --output data/provenances/clariq_provenances_bm25.jsonl \
-	    --k1 0.9 --b 0.4 \
+	    --output data/clariq_provenances_contriever.jsonl \
+	    --dense_retrieval \
+	    --q-encoder facebook/contriever-msmarco \
+	    --device cuda:2 \
+	    --batch_size 32 \
+	    --threads 4 \
 	    --index_dir ${INDEX_DIR} \
-	    --k 100
-	# contriever
-	# python3 src/pre/retrieve_passages2.py \
-	#     --clariq data/clariq/train.tsv \
-	#     --output data/clariq_provenances_dpr.jsonl \
-	#     --dense_retrieval \
-	#     --q-encoder facebook/dpr-question_encoder-multiset-base \
-	#     --device cuda:2 \
-	#     --batch_size 32 \
-	#     --threads 4 \
-	#     --index_dir /home/jhju/indexes/full_wiki_segments_dpr \
-	#     --k 100 
+	    --k 100 
 
 select_serp_clariq:
 	python3 src/data_augmentation/handler.py \

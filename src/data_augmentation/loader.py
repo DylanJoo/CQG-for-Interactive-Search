@@ -37,12 +37,13 @@ def load_collections(path, full=True):
     def normalize(text):
         return unicodedata.normalize("NFD", text)
 
-    collections = defaultdict(str)
+    # collections = defaultdict(str)
+    collections = {}
     print("Load collections...")
     with open(path, 'r') as f:
         for i, line in enumerate(tqdm(f)):
             data = json.loads(line.strip())
-            collections[data['id']] = normalize(data['contents'])
+            collections[str(data['id'])] = normalize(data['contents'])
             if (i == 10000) and (full is False):
                 break
     return collections
