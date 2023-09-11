@@ -1,98 +1,84 @@
-# CQG-for-Interactive-Search
+# Interactive-Search
 
-This repo is for clarification question generation in interactive search (e.g., Conversational or session-baed web search).
-Entire process includes
+The reproduction pipeline includes these procedures
 
 1. Construct SERP of ClariQ. (pre)
 2. Fine-tune FiD-CQG model.
-3. Generate (inference) the CQ for CANARD dataste.
-4. FIne-tune FiD-MRG model.
+3. Generate (inference) the retrieval-enhanced CQ.
+4. Fine-tune FiD-MRG model.
 
 ---
 ## Prerequisite
-There are some data and pacakge you need to install.
-
 ### Data
-- Datasets:
-Download the ClairQ and QReCC dataset dataset.  
-The files have already stored in [data](data/).
+Datasets:
+* Clarification question generation: [ClariQ](https://github.com/aliannejadi/ClariQ)
+* Open-domain conversational QA: [QReCC](https://github.com/apple/ml-qrecc).
 
-Check the original page 
-- [ClariQ](https://github.com/aliannejadi/ClariQ)
-- [QReCC](https://github.com/apple/ml-qrecc).
-(Note that QReCC contains [QuAC](https://sites.google.com/view/qanta/projects/canard), [CANARD](https://sites.google.com/view/qanta/projects/canard) and TRECCAsT dataset).
+Corpus:
+* Wikipedia dump Dec. 20, 2018: see [Contriver's repositary](https://github.com/facebookresearch/contriever) for detail.
 
-### Parse QReCC In case you would like to modify the data; the following scripts provide the detail of data and preprocessing and formatting.
+### Requirments
 ```
-# [TODO] revise this into qrecc
-# [TODO] documentation update
-python3 src/tools/parse_qrecc.py \
-  --qrecc data/qrecc/train.?? \
-  --output data/qrecc/train.?? \
-  --quac data/quac/
+pyserini=??
+transformers=??
+datasets=??
 ```
 
-- Corpus: 
-We use the wiki dump with the preprocessed codes in DPR. The preprocessed corpus has about 21M passages with title. 
-The scripts are from original [DPR repo](#).
+### 1. Construct SERP for ClariQ and QReCC
 
-### Packages
-```
-pyserini
-transformers 
-datasets
-```
----
+As SERP for qrecc is similar to the retrieval for clariq, we only show the scripts for clariq. 
+The scripts for qrecc can be found in the `Makefile` 
 
-### 1. Construct SERP of ClariQ
+### 1-1 Build index
+Build the inverted index for wiki corpus using pyserini toolkit.
+For both sparse and dense retrieval, we used pyserini API and build the lucene/FAISS index.
 
-### 1.0 Build lucene index 
-Build the inverted index of passages in the corpus using pyserini toolkit.
-Recommend to use pyserini API to build the FAISS or lucene index.
+- Lucene indexing: we append the title as part of the content.
 ```
-# Example of the Lucene index (`build_sparse_index.sh`).
 python3 -m pyserini.index.lucene \
   --collection JsonCollection \
-  --input <CORPUS_DIR (title included jsonl) > \
-  --index <INDEX_DIR> \
+  --input ${CORPUS_DIR} \
+  --index ${INDEX_DIR} \
   --generator DefaultLuceneDocumentGenerator \
-  --threads 4 \
-  --storePositions --storeDocvectors --storeRaw
+  --fields title \
+  --threads 8
+```
+- FAISS index: we adopted the contriver's pre-built index. More detail can be found in the [repo](https://github.com/facebookresearch/contriever).
 
-# Example of the FAISS index (`build_dense_index.sh`).
-# Note that we used the DPR context and query encoder for dense retrieval.
-python3 -m pyserini.encode input \
-  --corpus <CORPUS_PATH (title-included with [SEP]> \
-  --fields text \
-  --shard-id 0 \
-  --shard-num 1 output \
-  --embeddings <INDEX_DIR> \
-  --to-faiss encoder \
-  --encoder facebook/dpr-ctx_encoder-multiset-base \
-  --fields text \
-  --batch 48 \
-  --fp16 \
-  --device cuda:0
+### 1-2a Retrieve passages for ClariQ
+We demonstrate the sparse sesarch backbone. 
+```
+python3 src/data_augmentation/retrieve_passages.py \
+    --qrecc data/clariq/clariq_train.json \
+    --output data/clariq_provenances_bm25.jsonl \
+    --k1 0.9 --b 0.4 \
+    --index_dir ${INDEX_DIR} \
+    --k 100
 ```
 
-You can run `construct_provenance_clariq.sh` directly, which includes the following two steps:
+You can also replace it with dense retreival with this scripts:
 ```
-# Find K provenance candidates
-python3 src/pre/retrieve_passages.py \
+python3 src/pre/retrieve_passages2.py \
     --clariq data/clariq/train.tsv \
-    --output <CLARIQ_PRV> \
-    --index_dir <INDEX_DIR> \
+    --output data/clariq_provenances_contriever.jsonl \
+    --index_dir ${INDEX_DIR} \
+    --threads 8 \
     --k 100 \
-    --k1 0.9 \
-    --b 0.4
-
-# Select N provenances. This data is the training data for FiD-CQG.
+    --dense_retrieval \
+    --q-encoder facebook/contriever-msmarco \
+    --device cuda \
+    --batch_size 32
 ```
-python3 src/pre/organize_provenances.py \
-    --questions_with_provenances data/clariq_provenances_tc.jsonl \
-    --collections <CORPUS_DIR (title-separated jsonl) > \
-    --output data/train_fidcqg_v0.jsonl \
-    --N 10
+
+### 1-2b Retrieve passages for qrecc
+It will take a long time, we recommend you to download the pre-retrieved data stored [here](#).
+```
+python3 src/data_augmentation/retrieve_passages.py \
+    --qrecc data/qrecc/qrecc_train.json \
+    --output data/qrecc_provenances_bm25.jsonl \
+    --k1 0.9 --b 0.4 \
+    --index_dir ${INDEX_DIR} \
+    --k 100
 ```
 
 ### 2. Fine-tune FiD-CQG: Corpus-aware clarification question generation
