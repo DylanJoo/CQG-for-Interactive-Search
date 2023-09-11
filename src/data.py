@@ -149,6 +149,7 @@ class DataCollatorForMRG:
         )
 
         ## labeling if needed.
+        # clarification: 28733, response: 1773
         prefix = (lambda x: 'clarification' if x>0 else 'response')
         if self.is_train:
             texts = [f"{prefix(ex['c_need'])}: {ex['mi_response']}" for ex in features]

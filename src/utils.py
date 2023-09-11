@@ -1,4 +1,3 @@
-import collections
 from datasets import Dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd 
@@ -35,4 +34,4 @@ class TfidfTextScorer:
                     scores[i].append(mapping[self.word2idx[w]])
                 except:
                     scores[i].append(0)
-        return scores
+        return scoresass
