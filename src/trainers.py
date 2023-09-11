@@ -2,12 +2,10 @@ from transformers import Trainer
 import torch
 import copy
 from torch.nn import CrossEntropyLoss
-class TrainerForCQG(Trainer):
+
+class Trainer(Trainer):
     # customized loss counting function
     def compute_loss(self, model, inputs, return_outputs=False):
-        # [REVISE] JH: For the weighted purpose, 
-        # deactivating the feature of label smoothing
-
         labels = inputs.pop("labels")
         label_weights = inputs.pop("label_weights", None)
 
