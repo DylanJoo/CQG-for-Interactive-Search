@@ -7,11 +7,7 @@ removeme*
 wandb/
 
 # raw data
-data/canard/*
-!data/clariq/*
-data/quac/*
-data/qrecc/*
-!data/clariq/train.tsv
+data/*.jsonl
 
 # data
 data/archived/*
