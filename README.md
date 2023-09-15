@@ -57,18 +57,6 @@ python3 src/data_augmentation/retrieve_passages.py \
 ```
 
 You can also replace it with dense retreival with this scripts:
-```
-python3 src/pre/retrieve_passages2.py \
-    --clariq data/clariq/train.tsv \
-    --output data/clariq_provenances_contriever.jsonl \
-    --index_dir ${INDEX_DIR} \
-    --threads 8 \
-    --k 100 \
-    --dense_retrieval \
-    --q-encoder facebook/contriever-msmarco \
-    --device cuda \
-    --batch_size 32
-```
 
 ### 1-2b Retrieve passages for qrecc
 It will take a long time, we recommend you to download the pre-retrieved data stored [here](#).
@@ -80,6 +68,18 @@ python3 src/data_augmentation/retrieve_passages.py \
     --index_dir ${INDEX_DIR} \
     --k 100
 ```
+### 1-3a Construct provenances for ClariQ
+There have many possible ways to construct the provenances.
+Here, we used the overlapped passages as provenances.
+```
+python3 src/data_augmentation/handler.py \
+    --input data/clariq_provenances_bm25.jsonl \
+    --output data/fidcqg.train.bm25.ovl.jsonl \
+    --collections ${CORPUS} \
+    --topk 100 --N 10 --overlapped
+```
+
+### 1-3b Construct provenances for ClariQ
 
 ### 2. Fine-tune FiD-CQG: Corpus-aware clarification question generation
 Fine-tune the FiD-T5 model with synthetic ClariQ-SERP.

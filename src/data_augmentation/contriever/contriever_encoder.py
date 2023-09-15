@@ -20,7 +20,7 @@ from transformers import AutoTokenizer
 from pyserini.encode import DocumentEncoder
 from pyserini.search.faiss import QueryEncoder
 import sys
-from contriever import Contriever
+from .meta_contriever import Contriever
 
 class ContrieverDocumentEncoder(DocumentEncoder):
     def __init__(self, model_name, tokenizer_name=None, device='cuda:0'):

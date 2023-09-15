@@ -5,7 +5,9 @@ import numpy as np
 import loader
 
 def dense_retrieve(queries, args):
-    from pyserini.search import FaissSearcher, ContrieverQueryEncoder
+    import torch
+    from pyserini.search import FaissSearcher
+    from contriever import ContrieverQueryEncoder
     query_encoder = \
             ContrieverQueryEncoder(args.q_encoder, device=args.device)
     searcher = FaissSearcher(args.index_dir, args.q_encoder)
@@ -14,7 +16,7 @@ def dense_retrieve(queries, args):
         searcher.query_encoder.device = args.device
 
     # serp
-    qs = []
+    batch_queries = []
     serp = {}
     for index, q in enumerate(tqdm(queries, total=len(queries))):
         batch_queries.append(q)
@@ -35,6 +37,7 @@ def dense_retrieve(queries, args):
             results.clear()
         else:
             continue
+    return serp
 
 def sparse_retrieve(queries, args):
     from pyserini.search.lucene import LuceneSearcher
@@ -73,7 +76,7 @@ if __name__ == '__main__':
         dataset = loader.clariq(args.clariq)
 
         # pool queries for search
-        queries = np.unique(dataset['initial_request']).tolist()
+        queries = np.unique(dataset['question']).tolist()
         print(f"Amount of queries (request): {len(queries)}")
         queries += np.unique(dataset['q_and_cq']).tolist()
         print(f"Amount of queries (request and request+clariq): {len(queries)}")
@@ -103,7 +106,7 @@ if __name__ == '__main__':
         queries = np.unique(dataset['question']).tolist()
         print(f"Amount of queries (request): {len(queries)}")
         queries += np.unique(dataset['q_and_a']).tolist()
-        print(f"Amount of queries (request and request+clariq): {len(queries)}")
+        print(f"Amount of queries (request and request+qrecc): {len(queries)}")
 
         # SERP for qrecc dataset
         if args.dense_retrieval:
@@ -113,12 +116,12 @@ if __name__ == '__main__':
 
         # Add SERP to qrecc dataset
         fout = open(args.output, 'w') 
-        for qrecc_dict in qrecc:
+        for qrecc_dict in dataset:
             fout.write(json.dumps({
                 "id": qrecc_dict['id'],
                 "question": qrecc_dict['question'],
                 "answer": qrecc_dict['answer'],
-                "q_serp": serp[qrecc_dict['answer']],
+                "q_serp": serp[qrecc_dict['question']],
                 "ref_serp": serp[qrecc_dict['q_and_a']],
             }, ensure_ascii=False)+'\n')
         fout.close()
