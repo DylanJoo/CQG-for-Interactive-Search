@@ -2,9 +2,9 @@
 
 The reproduction pipeline includes these procedures
 
-1. Construct SERP of ClariQ. (pre)
+1. Construct SERP of ClariQ. (data_augmentation)
 2. Fine-tune FiD-CQG model.
-3. Generate (inference) the retrieval-enhanced CQ.
+3. Generate (inference) the retrieval-enhanced CQ. (data_augmentation)
 4. Fine-tune FiD-MRG model.
 
 ---
@@ -12,7 +12,7 @@ The reproduction pipeline includes these procedures
 ### Data (at CFDA4)
 All the data files are located at cfda4, or you can download at [huggingface hub](https://huggingface.co/datasets/DylanJHJ/CQG/tree/main).
 ```
-Dataset: /home/jhju/huggingface_hub/CQG/*
+- Dataset: /home/jhju/huggingface_hub/CQG/
 clariq_provenances_contriever.jsonl  
 fidcqg.train.contriever.ovl.jsonl  
 qrecc_provenances_contriever.jsonl
@@ -20,13 +20,12 @@ clariq_provenances_bm25.jsonl
 fidcqg.train.bm25.ovl.jsonl          
 qrecc_provenances_bm25.jsonl
 
-Corpus: /home/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
-
-Corpus index (bm25): /home/jhju/wikipedia-lucene/
-Corpus index (contriever): /home/jhju/wikipedia-contriever/
+- Corpus: /home/jhju/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
+- Corpus index (bm25): /home/jhju/indexes/wikipedia-lucene
+- Corpus index (contriever): /home/jhju/indexes/wikipedia-contriever
 ```
 
-### Download dataset (no necessary)
+You can also download the raw data and run with the codes below.
 - Dataset: [ClariQ](https://github.com/aliannejadi/ClariQ) for CQG, and [QReCC](https://github.com/apple/ml-qrecc) for ConvQA.
 ```
 wget https://github.com/aliannejadi/ClariQ/raw/master/data/train.tsv -P data/
@@ -34,16 +33,7 @@ wget https://github.com/apple/ml-qrecc/raw/main/dataset/qrecc_data.zip -P data/
 unzip data/qrecc_data.zip
 ```
 - Corpus: Wikipedia dump Dec. 20, 2018: see [Contriver's repositary](https://github.com/facebookresearch/contriever) for detail.
-```
-# The processed corpus is stored at
-CORPUS=/home/jhju/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
-```
 - Corpus indexes: you can index yourself (see 1.1) or download from [here](#).
-```
-# I have put the indexed files in these folders.
-bm25-wikipedia: /home/jhju/indexes/wikipedia-lucene
-contriever-wikipedia: /home/jhju/indexes/wikipedia-contriever
-```
 
 ### Requirments
 ```
@@ -52,8 +42,7 @@ transformers
 datasets
 ```
 
-### 1 Construct SERP for ClariQ and QReCC
-
+### 1 Construct SERP for ClariQ
 As SERP for qrecc is similar to the retrieval for clariq, we only show the scripts for clariq. 
 The scripts for qrecc can be found in the `Makefile` 
 
@@ -76,7 +65,6 @@ python3 -m pyserini.index.lucene \
 ### 1-2a Retrieve passages for ClariQ
 We demonstrate the sparse sesarch backbone. 
 ```
-INDEX_DIR=/home/jhju/indexes/wikipedia-lucene
 python3 src/data_augmentation/retrieve_passages.py \
     --clariq data/clariq/train.json \
     --output data/clariq_provenances_bm25.jsonl \
@@ -86,10 +74,9 @@ python3 src/data_augmentation/retrieve_passages.py \
 ```
 You can also replace it with dense retreival.
 
-### 1-2b Retrieve passages for qrecc
-It will take a long time, we recommend you to download the pre-retrieved data stored [here](#).
+### 1-2b Retrieve passages for QReCC
+It will take a long time, we recommend you to download the pre-retrieved data.
 ```
-INDEX_DIR=/home/jhju/indexes/wikipedia-lucene
 python3 src/data_augmentation/retrieve_passages.py \
     --qrecc data/qrecc/qrecc_train.json \
     --output data/qrecc_provenances_bm25.jsonl \
@@ -102,7 +89,6 @@ python3 src/data_augmentation/retrieve_passages.py \
 There have many possible ways to construct the provenances.
 Here, we used the **overlapped** passages as provenances. (see `handler.py` for detail)
 ```
-CORPUS=/home/jhju/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
 python3 src/data_augmentation/handler.py \
     --input data/clariq_provenances_bm25.jsonl \
     --output data/fidcqg.train.bm25.ovl.jsonl \
@@ -114,7 +100,6 @@ python3 src/data_augmentation/handler.py \
 Fine-tune the FiD-T5 model with synthetic ClariQ-SERP.
 I use the default training setups, you can also find more detail in `src/train_fidcqg.py` for detail.
 ```
-# Run `train_fidcqg.py` 
 python3 src/train_fidcqg.py \
     --model_name_or_path t5-base \
     --n_contexts 10 \
@@ -134,8 +119,8 @@ python3 src/train_fidcqg.py \
 ```
 
 ### 3-1 Construct provenances (create trianing data) for QRecc
-#### Predict clarification questions for QReCC queries.
-#### Collect the target of miresponse: answers and c_question
+# Predict clarification questions for QReCC queries.
+# Collect the target of miresponse: answers and c_question
 ```
 TBD
 ```
@@ -144,3 +129,5 @@ TBD
 ```
 TBD
 ```
+
+## 4. 
