@@ -9,18 +9,23 @@ The reproduction pipeline includes these procedures
 
 ---
 ## Prerequisite
-### Data
+### Data (at CFDA4)
 All the data files are located at cfda4, or you can download at [huggingface hub](https://huggingface.co/datasets/DylanJHJ/CQG/tree/main).
 ```
-/home/jhju/huggingface_hub/CQG/
-
+Dataset: /home/jhju/huggingface_hub/CQG/*
 clariq_provenances_contriever.jsonl  
 fidcqg.train.contriever.ovl.jsonl  
 qrecc_provenances_contriever.jsonl
 clariq_provenances_bm25.jsonl  
 fidcqg.train.bm25.ovl.jsonl          
 qrecc_provenances_bm25.jsonl
+
+Corpus: /home/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
+
+Corpus index (bm25): /home/jhju/wikipedia-lucene/
+Corpus index (contriever): /home/jhju/wikipedia-contriever/
 ```
+
 ### Download dataset (no necessary)
 - Dataset: [ClariQ](https://github.com/aliannejadi/ClariQ) for CQG, and [QReCC](https://github.com/apple/ml-qrecc) for ConvQA.
 ```
@@ -129,8 +134,8 @@ python3 src/train_fidcqg.py \
 ```
 
 ### 3-1 Construct provenances (create trianing data) for QRecc
-# Predict clarification questions for QReCC queries.
-# Collect the target of miresponse: answers and c_question
+#### Predict clarification questions for QReCC queries.
+#### Collect the target of miresponse: answers and c_question
 ```
 TBD
 ```
@@ -139,5 +144,3 @@ TBD
 ```
 TBD
 ```
-
-## 4. 
