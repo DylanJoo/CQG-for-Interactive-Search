@@ -20,8 +20,10 @@ clariq_provenances_bm25.jsonl
 fidcqg.train.bm25.ovl.jsonl          
 qrecc_provenances_bm25.jsonl
 
-- Corpus: /home/jhju/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
-- Corpus index (bm25): /home/jhju/indexes/wikipedia-lucene
+- Corpus:
+CORPUS_DIR=/home/jhju/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
+- Corpus index (bm25):
+INDEX_DIR=/home/jhju/indexes/wikipedia-lucene
 - Corpus index (contriever): /home/jhju/indexes/wikipedia-contriever
 ```
 
