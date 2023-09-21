@@ -22,23 +22,18 @@ fidcqg.train.bm25.ovl.jsonl
 qrecc_provenances_bm25.jsonl
 ```
 ### Download dataset (no necessary)
-- Dataset
-Download [ClariQ](https://github.com/aliannejadi/ClariQ) for CQG, and [QReCC](https://github.com/apple/ml-qrecc) for ConvQA.
+- Dataset: [ClariQ](https://github.com/aliannejadi/ClariQ) for CQG, and [QReCC](https://github.com/apple/ml-qrecc) for ConvQA.
 ```
 wget https://github.com/aliannejadi/ClariQ/raw/master/data/train.tsv -P data/
-
 wget https://github.com/apple/ml-qrecc/raw/main/dataset/qrecc_data.zip -P data/
 unzip data/qrecc_data.zip
 ```
-- Corpus
-* Wikipedia dump Dec. 20, 2018: see [Contriver's repositary](https://github.com/facebookresearch/contriever) for detail.
+- Corpus: Wikipedia dump Dec. 20, 2018: see [Contriver's repositary](https://github.com/facebookresearch/contriever) for detail.
 ```
 # The processed corpus is stored at
 CORPUS=/home/jhju/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
 ```
-
-- Corpus indexes
-You can index yourself (see 1.1) or download from [here](#), or use the indexed filed I've already done (see below).
+- Corpus indexes: you can index yourself (see 1.1) or download from [here](#).
 ```
 # I have put the indexed files in these folders.
 bm25-wikipedia: /home/jhju/indexes/wikipedia-lucene
