@@ -116,8 +116,8 @@ python3 src/train_fidcqg.py \
 ```
 
 ### 3-1 Construct provenances (create trianing data) for QRecc
-# Predict clarification questions for QReCC queries.
-# Collect the target of miresponse: answers and c_question
+#### Predict clarification questions for QReCC queries.
+#### Collect the target of miresponse: answers and c_question
 ```
 TBD
 ```
@@ -126,5 +126,3 @@ TBD
 ```
 TBD
 ```
-
-## 4. 
