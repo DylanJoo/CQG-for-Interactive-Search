@@ -68,7 +68,10 @@ if __name__ == '__main__':
                     range(0, len(serp_base[0])-1), k=args.N)]
 
             # change names
-            data['target'] = data.pop('c_question')
+            if 'cqg' in args.output:
+                data['target'] = data.pop('c_question')
+            if 'qa' in args.output:
+                data['target'] = data.pop('answer')
             data.update({
                 "provenances": [collections[docid] for docid in serp],
             })

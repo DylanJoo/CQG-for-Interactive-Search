@@ -15,7 +15,6 @@ def clariq(path):
     clariq = clariq.map(lambda ex: 
             {"q_and_cq": f"{ex['question']} {ex['c_question']}"}
     )
-
     return clariq
 
 def qrecc(path):

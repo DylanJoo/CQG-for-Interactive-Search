@@ -59,13 +59,13 @@ retrieve_serp_qrecc:
 	    --k 100
 
 retrieve_serp_qrecc_contriever:
-	python3 src/pre/retrieve_passages.py \
-	    --clariq data/qrecc/qrecc_train.tsv \
+	python3 src/data_augmentation/retrieve_passages.py \
+	    --qrecc data/qrecc/qrecc_train.json \
 	    --output data/qrecc_provenances_contriever.jsonl \
 	    --dense_retrieval \
 	    --q-encoder facebook/contriever-msmarco \
 	    --device cuda:2 \
-	    --batch_size 32 \
+	    --batch_size 54 \
 	    --threads 4 \
 	    --index_dir ${INDEX_DIR} \
 	    --k 100 
@@ -74,11 +74,11 @@ retrieve_serp_qrecc_contriever:
 construct_provenances_qrecc:
 	python3 src/data_augmentation/handler.py \
 	    --input data/qrecc_provenances_bm25.jsonl \
-	    --output data/fid.train.bm25.ovl.jsonl \
+	    --output data/fidqa.train.bm25.ovl.jsonl \
 	    --collections ${CORPUS} \
 	    --topk 100 --N 10 --overlapped
-	python3 src/data_augmentation/handler.py \
-	    --input data/qrecc_provenances_contriever.jsonl \
-	    --output data/fidcqg.train.contriever.ovl.jsonl \
-	    --collections ${CORPUS} \
-	    --topk 100 --N 10 --overlapped
+	# python3 src/data_augmentation/handler.py \
+	#     --input data/qrecc_provenances_contriever.jsonl \
+	#     --output data/fidqa.train.contriever.ovl.jsonl \
+	#     --collections ${CORPUS} \
+	#     --topk 100 --N 10 --overlapped
