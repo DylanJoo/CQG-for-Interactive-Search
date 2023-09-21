@@ -43,9 +43,6 @@ datasets
 ```
 
 ### 1 Construct SERP for ClariQ
-As SERP for qrecc is similar to the retrieval for clariq, we only show the scripts for clariq. 
-The scripts for qrecc can be found in the `Makefile` 
-
 ### 1-1 Build index
 Build the inverted index for wiki corpus using pyserini toolkit.
 For both sparse and dense retrieval, we used pyserini API and build the lucene/FAISS index.
