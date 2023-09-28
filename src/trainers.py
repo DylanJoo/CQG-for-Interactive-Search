@@ -41,7 +41,7 @@ class Trainer(Trainer):
 
 
         # [REVISE]
-        if self.state.global_step % 10 == 1:
+        if self.state.global_step % 50 == 1:
             with torch.no_grad():
                 outputs = model.generate(
                         input_ids=inputs['input_ids'],

@@ -31,3 +31,15 @@ class FiDT5(T5ForConditionalGeneration):
         self.model_parallel = False
         self.device_map = None
 
+    def forward(self, 
+                input_ids=None,
+                attention_mask=None,
+                return_loss=True,
+                **kwargs):
+
+        return super().forward(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                **kwargs
+        )
+
