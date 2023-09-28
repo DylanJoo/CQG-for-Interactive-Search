@@ -12,9 +12,10 @@ python3 src/train_fidcqg.py \
     --max_tgt_length 64 \
     --max_steps 4000 \
     --save_steps 1000 \
-    --eval_steps 200 \
+    --eval_steps 10 \
     --do_train true \
     --do_eval true \
+    --learning_rate 1e-4 \
     --dataloader_num_workers 0 \
     --dataloader_pin_memory false \
     --remove_unused_columns false
