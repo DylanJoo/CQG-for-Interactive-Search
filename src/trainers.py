@@ -44,17 +44,17 @@ class Trainer(Trainer):
         if self.state.global_step % 10 == 1:
             with torch.no_grad():
                 outputs = model.generate(
-                        inputs.input_ids, 
-                        inputs.attention_mask, 
+                        input_ids=inputs['input_ids'],
+                        attention_mask=inputs['attention_mask'],
                         max_length=30
                 )
                 for k, o in enumerate(outputs):
-                    i = inputs.input_ids[k, 1, :]
+                    i = inputs['input_ids'][k, 1, :]
                     l = labels.detach().cpu().numpy()[k, :]
                     l = [ll for ll in l if ll != -100]
-                    src = model.tokenizer.decode(i, skip_special_tokens=True)
-                    tgt = model.tokenizer.decode(o, skip_special_tokens=True)
-                    lbl = model.tokenizer.decode(l, skip_special_tokens=True)
+                    src = self.tokenizer.decode(i, skip_special_tokens=True)
+                    tgt = self.tokenizer.decode(o, skip_special_tokens=True)
+                    lbl = self.tokenizer.decode(l, skip_special_tokens=True)
                     print("\n\n", src)
                     print("-->", tgt)
                     print("==>", lbl)

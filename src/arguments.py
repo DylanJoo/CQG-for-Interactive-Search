@@ -3,7 +3,7 @@ from typing import Optional
 from transformers import TrainingArguments
 
 @dataclass
-class OurHFModelArguments:
+class HFModelArgs:
     model_name_or_path: Optional[str] = field(default='t5-base')
     config_name: Optional[str] = field(default='t5-base')
     tokenizer_name: Optional[str] = field(default='t5-base')
@@ -13,14 +13,14 @@ class OurHFModelArguments:
     use_auth_token: bool = field(default=False)
 
 @dataclass
-class OurModelArguments:
+class ModelArgs:
     use_checkpoint: bool = field(default=False)
     n_contexts: Optional[int] = field(default=3)
     tfidf_weighted: bool = field(default=False)
     tfidf_weighted_stopwords: Optional[str] = field(default=None)
 
 @dataclass
-class OurDataArguments:
+class DataArgs:
     dataset_config_name: Optional[str] = field(default=None)
     overwrite_cache: bool = field(default=False)
     validation_split_percentage: Optional[int] = field(default=0)
@@ -32,7 +32,7 @@ class OurDataArguments:
     max_tgt_length: int = field(default=64)
 
 @dataclass
-class OurTrainingArguments(TrainingArguments):
+class TrainingArgs(TrainingArguments):
     output_dir: str = field(default='./fidcqg')
     seed: int = field(default=42)
     data_seed: int = field(default=None)

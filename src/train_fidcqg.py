@@ -7,7 +7,7 @@ from transformers import (
     HfArgumentParser,
     GenerationConfig
 )
-from model import FiDT5
+from models import FiDT5
 from data import DataCollatorForCQG
 from datasets import load_dataset
 from trainers import Trainer
@@ -16,12 +16,14 @@ from arguments import *
 def main():
 
     ## Parseing argument for huggingface packages
-    parser = HfArgumentParser((OurHFModelArguments, OurModelArguments, OurDataArguments, OurTrainingArguments))
+    parser = HfArgumentParser((HFModelArgs, ModelArgs, DataArgs, TrainingArgs))
+
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         hfmodel_args, model_args, data_args, training_args = \
                 parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
-        hfmodel_args, model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+        hfmodel_args, model_args, data_args, training_args = \
+                parser.parse_args_into_dataclasses()
 
     ## additional config for models
     config = AutoConfig.from_pretrained(hfmodel_args.config_name)
@@ -29,15 +31,10 @@ def main():
     model = FiDT5.from_pretrained(hfmodel_args.model_name_or_path)
 
     ## dataset 
-    dataset = load_dataset('json', data_files=data_args.train_file, in_memory=True)
+    dataset = load_dataset('json', data_files=data_args.train_file)
     N = len(dataset['train'])
     if training_args.do_eval:
-        if data_args.eval_file:
-            dataset['eval'] = load_dataset('json', data_files=data_args.eval_file)['train']
-        else:
-            dataset['eval'] = dataset['train'].select(
-                    random.sample(range(N), 100)
-            )
+        dataset['dev'] = dataset['train'].select(random.sample(range(N), 100))
 
     ## weighted generation loss from tfidf weight
     if model_args.tfidf_weighted:
@@ -53,6 +50,7 @@ def main():
             max_tgt_length=data_args.max_tgt_length,
             return_tensors='pt',
             n_contexts=model_args.n_contexts,
+            is_train=True,
             scorer=tfidfscorer if model_args.tfidf_weighted else None
     )
 
@@ -60,8 +58,9 @@ def main():
     trainer = Trainer(
             model=model, 
             args=training_args,
+            tokenizer=tokenizer,
             train_dataset=dataset['train'],
-            eval_dataset=dataset['eval'] if training_args.do_eval else None,
+            eval_dataset=dataset['dev'] if training_args.do_eval else None,
             data_collator=datacollator
     )
     

@@ -41,7 +41,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Load collections for docid
-    collections = load_collections(args.collections)
+    collections, titles = load_collections(args.collections, title=True)
 
     # Distributing passages to each query
     with open(args.input, 'r') as fin, open(args.output, 'w') as fout:
@@ -72,7 +72,9 @@ if __name__ == '__main__':
                 data['target'] = data.pop('c_question')
             if 'qa' in args.output:
                 data['target'] = data.pop('answer')
+
             data.update({
+                "titles": [titles[docid] for docid in serp],
                 "provenances": [collections[docid] for docid in serp],
             })
             fout.write(json.dumps(data, ensure_ascii=False)+'\n')

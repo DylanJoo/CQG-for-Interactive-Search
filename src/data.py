@@ -1,13 +1,3 @@
-# This source code is edited based on the FiD's code.
-# The FiD's codes are made for standard QA tasks.
-# And this code is made for Conversational QA.
-# 
-## Copyright (c) Facebook, Inc. and its affiliates.
-## All rights reserved.
-##
-## This source code is licensed under the license found in the
-## LICENSE file in the root directory of this source tree.
-
 import torch
 import random
 import json
@@ -21,21 +11,23 @@ from transformers.tokenization_utils_base import (
         PreTrainedTokenizerBase, 
         PaddingStrategy
 )
-from utils import TfidfTextScorer
+from tools import TfidfTextScorer
 
 @dataclass
-class DataCollatorForCQG:
+class DataCollatorBase:
     tokenizer: Union[PreTrainedTokenizerBase] = None
     padding: Union[bool, str, PaddingStrategy] = True
     truncation: Union[bool, str] = True
-    max_length: Optional[int] = 512
-    max_cq_length: Optional[int] = 64
     pad_to_multiple_of: Optional[int] = None
     return_tensors: str = "pt"
     padding: Union[bool, str] = True
-    # spec
+
+@dataclass
+class DataCollatorForCQG(DataCollatorBase):
     is_train: Union[bool, str] = False
     n_contexts: Union[int, str] = 1
+    max_src_length: Optional[int] = 512
+    max_tgt_length: Optional[int] = 64
     scorer: Union[TfidfTextScorer] = None
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -50,7 +42,7 @@ class DataCollatorForCQG:
 
         inputs = self.tokenizer.batch_encode_plus(
                 texts, 
-                max_length=self.max_length,
+                max_length=self.max_src_length,
                 padding=True,
                 return_tensors=self.return_tensors,
                 truncation=True
@@ -58,17 +50,17 @@ class DataCollatorForCQG:
 
         ### adjustments
         inputs['input_ids'] = inputs['input_ids'].view(
-                -1, self.n_contexts, inputs.input_ids.size(-1)
+                -1, self.n_contexts, inputs['input_ids'].size(-1)
         )
         inputs['attention_mask'] = inputs['attention_mask'].view(
-                -1, self.n_contexts, inputs.attention_mask.size(-1)
+                -1, self.n_contexts * inputs['attention_mask'].size(-1)
         )
 
         ## labeling if needed.
         if self.is_train:
             targets = self.tokenizer.batch_encode_plus(
-                    [ex['c_question'] for ex in features],
-                    max_length=self.max_cq_length,
+                    [ex['target'] for ex in features],
+                    max_length=self.max_tgt_length,
                     padding=True,
                     return_tensors=self.return_tensors,
                     truncation=True,
@@ -87,7 +79,7 @@ class DataCollatorForCQG:
 
                 # 1. fetch tfidf scores
                 scores = self.scorer.get_scores(
-                        [ex['c_question'] for ex in features]
+                        [ex['target'] for ex in features]
                 )
                 # 2. arrange the scores for the (tokenized) words
                 for i in range(len(targets)):
@@ -101,8 +93,8 @@ class DataCollatorForCQG:
                                     torch.tensor(word_idx_of_token)
                             )
         else:
-            inputs['c_question'] =  [ex['c_question'] for ex in features]
             inputs['question'] =  [ex['question'] for ex in features]
+            inputs['c_question'] =  [ex['target'] for ex in features]
 
         return inputs
 
@@ -134,7 +126,7 @@ class DataCollatorForMRG:
 
         inputs = self.tokenizer.batch_encode_plus(
                 texts, 
-                max_length=self.max_length,
+                max_length=self.max_src_length,
                 padding=True,
                 return_tensors=self.return_tensors,
                 truncation=True
@@ -155,7 +147,7 @@ class DataCollatorForMRG:
             texts = [f"{prefix(ex['c_need'])}: {ex['mi_response']}" for ex in features]
             targets = self.tokenizer.batch_encode_plus(
                     texts,
-                    max_length=self.max_length_answer,
+                    max_length=self.max_tgt_length,
                     padding=True,
                     return_tensors=self.return_tensors,
                     truncation=True,

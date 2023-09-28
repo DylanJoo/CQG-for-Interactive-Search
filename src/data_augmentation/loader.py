@@ -32,18 +32,22 @@ def qrecc(path):
     )
     return qrecc
 
-def load_collections(path, full=True):
+def load_collections(path, title=False, full=True):
     def normalize(text):
         return unicodedata.normalize("NFD", text)
 
-    # collections = defaultdict(str)
     collections = {}
+    titles = {}
     print("Load collections...")
     with open(path, 'r') as f:
         for i, line in enumerate(tqdm(f)):
             data = json.loads(line.strip())
             collections[str(data['id'])] = normalize(data['contents'])
+            titles[str(data['id'])] = normalize(data['title'])
             if (i == 10000) and (full is False):
                 break
-    return collections
+    if title:
+        return collections, titles
+    else:
+        return collections
 

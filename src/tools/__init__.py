@@ -1,1 +1,1 @@
-from weighter import TfidfTextScorer
+from .weighter import TfidfTextScorer
