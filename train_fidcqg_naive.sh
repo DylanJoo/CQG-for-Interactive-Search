@@ -12,7 +12,7 @@ python3 src/train_fidcqg.py \
     --max_tgt_length 64 \
     --max_steps 4000 \
     --save_steps 1000 \
-    --eval_steps 10 \
+    --eval_steps 50 \
     --do_train true \
     --do_eval true \
     --learning_rate 1e-4 \

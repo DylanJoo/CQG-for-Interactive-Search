@@ -36,8 +36,13 @@ def load_collections(path, title=False, full=True):
     def normalize(text):
         return unicodedata.normalize("NFD", text)
 
-    collections = {}
-    titles = {}
+    if full:
+        collections = {}
+        titles = {}
+    else:
+        collections = defaultdict(str)
+        titles = defaultdict(str)
+
     print("Load collections...")
     with open(path, 'r') as f:
         for i, line in enumerate(tqdm(f)):

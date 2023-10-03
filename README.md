@@ -117,8 +117,13 @@ python3 src/train_fidcqg.py \
     --remove_unused_columns false
 ```
 
-### 3-1 Construct provenances (create trianing data) for QRecc
-#### Predict clarification questions for QReCC queries.
+### 3 Predict pseudo clarifying questions for QRecc
+We first use fine-tuned CQG to generate the clarifying questions for each QReCC questions and their retrieved passaage. 
+```
+python3
+```
+
+### 4 Construct provenances (create trianing data) for QRecc
 #### Collect the target of miresponse: answers and c_question
 ```
 TBD

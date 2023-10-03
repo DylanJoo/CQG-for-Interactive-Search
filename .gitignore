@@ -18,9 +18,10 @@ data/*jsonl
 # checkpoints
 checkpoints/
 
-# evaluation data (coqa)
+# evaluation data
 evaluation/*
 evaluation/README.md
+predictions/
 
 # archived codes
 **/archived/

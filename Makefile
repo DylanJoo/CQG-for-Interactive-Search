@@ -38,7 +38,7 @@ index_wiki_corpus_bm25:
 # 	    --k 100 
 
 # 1-3a
-construct_provenances_clariq:
+construct_provenances_fidcqg:
 	python3 src/data_augmentation/handler.py \
 	    --input ${DATASET_DIR}/clariq_provenances_bm25.jsonl \
 	    --output ${DATASET_DIR}/fidcqg.train.bm25.ovl.jsonl \
@@ -49,6 +49,13 @@ construct_provenances_clariq:
 	    --output ${DATASET_DIR}/fidcqg.train.contriever.ovl.jsonl \
 	    --collections ${CORPUS} \
 	    --topk 100 --N 10 --overlapped
+# 2
+train_fidcqg_naive:
+	echo "train_fidcqg_naive.sh"
+
+train_fidcqg_weighted:
+	echo "train_fidcqg_weighted.sh"
+
 
 # 1-2b
 # retrieve_serp_qrecc:
@@ -72,14 +79,17 @@ construct_provenances_clariq:
 # 	    --k 100 
 
 # 1-3b
-construct_provenances_qrecc:
-	python3 src/data_augmentation/handler.py \
-	    --input data/qrecc_provenances_bm25.jsonl \
-	    --output data/fidqa.train.bm25.ovl.jsonl \
-	    --collections ${CORPUS} \
-	    --topk 100 --N 10 --overlapped
-	# python3 src/data_augmentation/handler.py \
-	#     --input data/qrecc_provenances_contriever.jsonl \
-	#     --output data/fidqa.train.contriever.ovl.jsonl \
-	#     --collections ${CORPUS} \
-	#     --topk 100 --N 10 --overlapped
+prepare_provenances_qrecc:
+	python3 src/inference_fidcqg.py \
+	    --jsonl_file data/qrecc_provenances_bm25.jsonl \
+	    --output_file predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl \
+	    --collections ~/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl\
+	    --batch_size 16 \
+	    --used_checkpoint checkpoints/fidcqg.bm25.ovl/checkpoint-4000 \
+	    --used_tokenizer google/flan-t5-base \
+	    --calculate_crossattention  \
+	    --n_contexts 10 \
+	    --batch_size 8 \
+	    --max_length 64 \
+	    --device cuda:1 \
+	    --num_beams 5
