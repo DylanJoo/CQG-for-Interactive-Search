@@ -20,9 +20,9 @@ clariq_provenances_bm25.jsonl
 fidcqg.train.bm25.ovl.jsonl          
 qrecc_provenances_bm25.jsonl
 
-- Corpus:
+- Wiki's Corpus:
 CORPUS_DIR=/home/jhju/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl
-- Corpus index (bm25):
+- Wiki's Corpus index (bm25):
 INDEX_DIR=/home/jhju/indexes/wikipedia-lucene
 - Corpus index (contriever): /home/jhju/indexes/wikipedia-contriever
 ```
@@ -61,7 +61,9 @@ python3 -m pyserini.index.lucene \
 ```
 - FAISS index: we adopted the contriver's pre-built index. More detail can be found in the [repo](https://github.com/facebookresearch/contriever).
 
-### 1-2a Retrieve passages for ClariQ
+> [TODO] Try the common crawl corpus (has been downloaded)
+
+### 1-2 Retrieve passages for ClariQ (sparse)
 We demonstrate the sparse sesarch backbone. 
 ```
 python3 src/data_augmentation/retrieve_passages.py \
@@ -73,31 +75,10 @@ python3 src/data_augmentation/retrieve_passages.py \
 ```
 You can also replace it with dense retreival.
 
-### 1-2b Retrieve passages for QReCC
-It will take a long time, we recommend you to download the pre-retrieved data.
-```
-python3 src/data_augmentation/retrieve_passages.py \
-    --qrecc data/qrecc/qrecc_train.json \
-    --output data/qrecc_provenances_bm25.jsonl \
-    --k1 0.9 --b 0.4 \
-    --index_dir ${INDEX_DIR} \
-    --k 100
-```
-
-### 1-3 Construct provenances (create training data) for ClariQ
-There have many possible ways to construct the provenances.
-Here, we used the **overlapped** passages as provenances. (see `handler.py` for detail)
-```
-python3 src/data_augmentation/handler.py \
-    --input data/clariq_provenances_bm25.jsonl \
-    --output data/fidcqg.train.bm25.ovl.jsonl \
-    --collections ${CORPUS} \
-    --topk 100 --N 10 --overlapped
-```
-
 ### 2 Fine-tune FiD-CQG
 Fine-tune the FiD-T5 model with synthetic ClariQ-SERP.
 I use the default training setups, you can also find more detail in `src/train_fidcqg.py` for detail.
+
 ```
 python3 src/train_fidcqg.py \
     --model_name_or_path t5-base \
@@ -117,14 +98,54 @@ python3 src/train_fidcqg.py \
     --remove_unused_columns false
 ```
 
-### 3 Predict pseudo clarifying questions for QRecc
-We first use fine-tuned CQG to generate the clarifying questions for each QReCC questions and their retrieved passaage. 
+## Construct SERP for QReCC
+We first retrieved passage with standard query index, and question + answer as well.
+### 3-1 Retrieve passages for QReCC
+It will take a long time, we recommend you to download the pre-retrieved data.
 ```
-python3
+python3 src/data_augmentation/retrieve_passages.py \
+    --qrecc data/qrecc/qrecc_train.json \
+    --output ${DATASET_DIR}/qrecc_provenances_bm25.jsonl \
+    --k1 0.9 --b 0.4 \
+    --index_dir ${INDEX_DIR} \
+    --k 100
+```
+
+### 3-2 Construct provenances (create training data) for ClariQ
+There have many possible ways to construct the provenances.
+Here, we used the **overlapped** passages as provenances. (see `handler.py` for detail)
+> NOTE: (1) Try TART's negative sampling methods (2) Try considering predicteed predicted clarifying question as well
+```
+python3 src/data_augmentation/handler.py \
+    --input data/clariq_provenances_bm25.jsonl \
+    --output data/fidcqg.train.bm25.ovl.jsonl \
+    --collections ${CORPUS} \
+    --topk 100 --N 10 --overlapped
+```
+
+### 3-3 Predict pseudo clarifying questions for QRecc
+We first use fine-tuned CQG to generate the clarifying questions for each QReCC questions and their retrieved passaage. 
+
+```
+python3 src/inference_fidcqg.py \
+    --jsonl_file data/qrecc_provenances_bm25.jsonl \
+    --output_file predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl \
+    --collections ~/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl\
+    --batch_size 6 \
+    --used_checkpoint checkpoints/fidcqg.bm25.ovl/checkpoint-4000 \
+    --used_tokenizer google/flan-t5-base \
+    --calculate_crossattention  \
+    --n_contexts 10 \
+    --batch_size 8 \
+    --max_length 64 \
+    --device cuda \
+    --num_beams 5
 ```
 
 ### 4 Construct provenances (create trianing data) for QRecc
 #### Collect the target of miresponse: answers and c_question
+Here we have tried different versions of training approaches.
+
 ```
 TBD
 ```

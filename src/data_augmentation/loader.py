@@ -46,9 +46,9 @@ def load_collections(path, title=False, full=True):
     print("Load collections...")
     with open(path, 'r') as f:
         for i, line in enumerate(tqdm(f)):
-            data = json.loads(line.strip())
-            collections[str(data['id'])] = normalize(data['contents'])
-            titles[str(data['id'])] = normalize(data['title'])
+            item = json.loads(line.strip())
+            collections[str(item['id'])] = normalize(item['contents'])
+            titles[str(item['id'])] = normalize(item['title'])
             if (i == 10000) and (full is False):
                 break
     if title:
@@ -56,3 +56,10 @@ def load_collections(path, title=False, full=True):
     else:
         return collections
 
+def load_cqg_predictions(path):
+    data = {}
+    with open(path, 'r') as f:
+        for line in tqdm(f):
+            item = json.loads(line.strip())
+            data[str(item['qid'])] = item['c_question']
+    return data

@@ -7,6 +7,14 @@ preprocess_wiki_corpus:
 	  --path_tsv ${CORPUS_DIR}/wiki_psgs_w100.tsv \
 	  --path_jsonl ${CORPUS_DIR}/wiki_psgs_w100.jsonl
 # 1-1
+index_cc_bm25:
+	python3 -m pyserini.index.lucene \
+	  --collection JsonCollection \
+	  --input /home/jhju/datasets/qrecc/collection-paragraph/ \
+	  --index /home/jhju/indexes/qrecc-commoncrawl-lucene/  \
+	  --generator DefaultLuceneDocumentGenerator \
+	  --threads 8
+
 index_wiki_corpus_bm25:
 	python3 -m pyserini.index.lucene \
 	  --collection JsonCollection \
@@ -16,28 +24,29 @@ index_wiki_corpus_bm25:
 	  --fields title \
 	  --threads 8
 
-# 1-2a
-# retrieve_serp_clariq:
-# 	python3 src/data_augmentation/retrieve_passages.py \
-# 	    --clariq data/clariq/train.tsv \
-# 	    --output data/clariq_provenances_bm25.jsonl \
-# 	    --k1 0.9 --b 0.4 \
-# 	    --index_dir ${INDEX_DIR} \
-# 	    --k 100
-#
-# retrieve_serp_clariq_contriever:
-# 	python3 src/data_augmentation/retrieve_passages.py \
-# 	    --clariq data/clariq/train.tsv \
-# 	    --output data/clariq_provenances_contriever.jsonl \
-# 	    --dense_retrieval \
-# 	    --q-encoder facebook/contriever-msmarco \
-# 	    --device cuda:2 \
-# 	    --batch_size 32 \
-# 	    --threads 4 \
-# 	    --index_dir ${INDEX_DIR} \
-# 	    --k 100 
+# 1-2 (sparse)
+retrieve_serp_clariq_bm25:
+	python3 src/data_augmentation/retrieve_passages.py \
+	    --clariq data/clariq/train.tsv \
+	    --output data/clariq_provenances_bm25.jsonl \
+	    --k1 0.9 --b 0.4 \
+	    --index_dir ${INDEX_DIR} \
+	    --k 100
 
-# 1-3a
+# 1-2 (dense)
+retrieve_serp_clariq_contriever:
+	python3 src/data_augmentation/retrieve_passages.py \
+	    --clariq data/clariq/train.tsv \
+	    --output data/clariq_provenances_contriever.jsonl \
+	    --dense_retrieval \
+	    --q-encoder facebook/contriever-msmarco \
+	    --device cuda:2 \
+	    --batch_size 32 \
+	    --threads 4 \
+	    --index_dir ${INDEX_DIR} \
+	    --k 100 
+
+# 1-3
 construct_provenances_fidcqg:
 	python3 src/data_augmentation/handler.py \
 	    --input ${DATASET_DIR}/clariq_provenances_bm25.jsonl \
@@ -57,39 +66,52 @@ train_fidcqg_weighted:
 	echo "train_fidcqg_weighted.sh"
 
 
-# 1-2b
-# retrieve_serp_qrecc:
-# 	python3 src/data_augmentation/retrieve_passages.py \
-# 	    --qrecc data/qrecc/qrecc_train.json \
-# 	    --output ${DATASET_DIR}/qrecc_provenances_bm25.jsonl \
-# 	    --k1 0.9 --b 0.4 \
-# 	    --index_dir ${INDEX_DIR} \
-# 	    --k 100
-#
-# retrieve_serp_qrecc_contriever:
-# 	python3 src/data_augmentation/retrieve_passages.py \
-# 	    --qrecc data/qrecc/qrecc_train.json \
-# 	    --output ${DATSET_DIR}/qrecc_provenances_contriever.jsonl \
-# 	    --dense_retrieval \
-# 	    --q-encoder facebook/contriever-msmarco \
-# 	    --device cuda:2 \
-# 	    --batch_size 54 \
-# 	    --threads 4 \
-# 	    --index_dir ${INDEX_DIR} \
-# 	    --k 100 
+# 3-1
+retrieve_serp_qrecc_bm25:
+	python3 src/data_augmentation/retrieve_passages.py \
+	    --qrecc data/qrecc/qrecc_train.json \
+	    --output ${DATASET_DIR}/qrecc_provenances_bm25.jsonl \
+	    --k1 0.9 --b 0.4 \
+	    --index_dir ${INDEX_DIR} \
+	    --k 100
 
-# 1-3b
-prepare_provenances_qrecc:
+retrieve_serp_qrecc_contriever:
+	python3 src/data_augmentation/retrieve_passages.py \
+	    --qrecc data/qrecc/qrecc_train.json \
+	    --output ${DATSET_DIR}/qrecc_provenances_contriever.jsonl \
+	    --dense_retrieval \
+	    --q-encoder facebook/contriever-msmarco \
+	    --device cuda:2 \
+	    --batch_size 54 \
+	    --threads 4 \
+	    --index_dir ${INDEX_DIR} \
+	    --k 100 
+
+# 3-3
+## use q_serp instead of  ref_serp. 
+## Other type of SERP should prbbly be considered.
+predict_provenances_qrecc: 
 	python3 src/inference_fidcqg.py \
 	    --jsonl_file data/qrecc_provenances_bm25.jsonl \
 	    --output_file predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl \
 	    --collections ~/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl\
-	    --batch_size 16 \
+	    --batch_size 6 \
 	    --used_checkpoint checkpoints/fidcqg.bm25.ovl/checkpoint-4000 \
 	    --used_tokenizer google/flan-t5-base \
 	    --calculate_crossattention  \
 	    --n_contexts 10 \
 	    --batch_size 8 \
 	    --max_length 64 \
-	    --device cuda:1 \
+	    --device cuda \
 	    --num_beams 5
+
+# 3-4
+PRED_CQ=predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl
+construct_provenances_qrecc:
+	# overlapped
+	python3 src/data_augmentation/handler.py \
+	    --input ${DATASET_DIR}/qrecc_provenances_bm25.jsonl \
+	    --input_cqg_predictions ${PRED_CQ} \
+	    --output ${DATASET_DIR}/fidmrg.train.bm25.ovl_cqpred.bm25.ovl.jsonl \
+	    --collections ${CORPUS} \
+	    --topk 100 --N 10 --overlapped

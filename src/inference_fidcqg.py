@@ -34,7 +34,8 @@ if __name__ == '__main__':
     with open(args.jsonl_file, 'r') as fin:
         for line in tqdm(fin):
             data = json.loads(line.strip())
-            serp = data.pop('q_serp')[0][:args.top_k]
+            # [NOTE] the diverse set of serp should be considered
+            serp = data.pop('q_serp')[0][:args.top_k] 
             _ = data.pop('ref_serp')
 
             data.update({
@@ -71,7 +72,7 @@ if __name__ == '__main__':
 
             inputs = tokenizer.batch_encode_plus(
                     texts, 
-                    max_length=512,
+                    max_length=256,
                     padding=True,
                     return_tensors='pt',
                     truncation=True
@@ -90,7 +91,7 @@ if __name__ == '__main__':
                     num_beams=args.num_beams,
                     do_sample=args.do_sample,
                     top_k=args.top_k
-            )
+            ).detach().cpu()
             predictions = tokenizer.batch_decode(
                     outputs, skip_special_tokens=True
             )

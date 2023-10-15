@@ -6,7 +6,7 @@ import pandas as pd
 import random
 from tqdm import tqdm
 from datasets import load_dataset
-from loader import load_collections
+from loader import load_collections, load_cqg_predictions
 
 def overlapped_provenances(list1, list2, N):
     serp = [docid for docid in list1 if docid in list2]
@@ -38,10 +38,15 @@ if __name__ == '__main__':
     parser.add_argument("--overlapped", default=False, action='store_true')
     parser.add_argument("--exclusive", default=False, action='store_true')
     parser.add_argument("--random", default=False, action='store_true')
+    # additional data
+    parser.add_argument("--input_cqg_predictions", type=str, default=None)
     args = parser.parse_args()
 
     # Load collections for docid
     collections, titles = load_collections(args.collections, title=True)
+
+    ## Load cq predictions for question answering
+    cq_predictions = load_cqg_predictions(args.input_cqg_predictions)
 
     # Distributing passages to each query
     with open(args.input, 'r') as fin, open(args.output, 'w') as fout:
@@ -68,11 +73,16 @@ if __name__ == '__main__':
                     range(0, len(serp_base[0])-1), k=args.N)]
 
             # change names
-            if 'cqg' in args.output:
+            if 'fidcqg' in args.output:
                 data['target'] = data.pop('c_question')
-            if 'qa' in args.output:
+            if 'fidqa' in args.output:
                 data['target'] = data.pop('answer')
-
+            ## mixed 'answer' and 'predicted c_question'
+            if 'fidmrg' in args.output:
+                data['target'] = {
+                        "answer": data.pop('answer'),
+                        "clarify": cq_predictions[data['id']],
+                }
             data.update({
                 "titles": [titles[docid] for docid in serp],
                 "provenances": [collections[docid] for docid in serp],
