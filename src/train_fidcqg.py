@@ -39,9 +39,9 @@ def main():
 
     ## weighted generation loss from tfidf weight
     if model_args.tfidf_weighted:
-        from utils import TfidfTextScorer
+        from tools import TfidfTextScorer
         tfidfscorer = TfidfTextScorer()
-        tfidfscorer.fit_corpus(dataset['train']['targets'])
+        tfidfscorer.fit_corpus(dataset['train']['target'])
 
     ## data collator
     datacollator = DataCollatorForCQG(

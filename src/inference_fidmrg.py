@@ -34,7 +34,7 @@ if __name__ == '__main__':
             data = json.loads(line.strip())
             # [NOTE] No `ref_serp` when testing
             serp = data.pop('q_serp')[0][:args.top_k] 
-            # _ = data.pop('ref_serp', None)
+            _ = data.pop('ref_serp', None)
 
             data.update({
                 "titles": [titles[docid] for docid in serp],
@@ -44,6 +44,7 @@ if __name__ == '__main__':
 
     # load dataset
     dataset = Dataset.from_list(data_list)
+    print(dataset)
 
     # load model/tokenizer
     tokenizer = AutoTokenizer.from_pretrained(args.used_tokenizer)

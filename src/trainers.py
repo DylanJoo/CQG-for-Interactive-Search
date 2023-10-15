@@ -25,12 +25,13 @@ class Trainer(Trainer):
             outputs['loss'] = (loss * label_weights.view(-1)).mean()
         # NLL loss (mean)
         else:
-            loss_fct = CrossEntropyLoss(ignore_index=-100)
+            loss_fct = CrossEntropyLoss(ignore_index=-100, reduction='none')
             labels = labels.to(lm_logits.device)
-            outputs['loss'] = loss_fct(
+            loss = loss_fct(
                     lm_logits.view(-1, lm_logits.size(-1)), 
                     labels.view(-1)
-            )
+            ).view(labels.shape[0], labels.shape[1])
+            outputs['loss'] = loss.sum(-1).mean()
 
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.
