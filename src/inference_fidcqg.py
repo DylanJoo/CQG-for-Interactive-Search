@@ -4,10 +4,8 @@ import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer
 from models import FiDT5
-from data import DataCollatorForCQG
 from tools import batch_iterator
 from data_augmentation.loader import load_collections
-from torch.utils.data import DataLoader
 from datasets import Dataset
 
 if __name__ == '__main__':
@@ -62,7 +60,6 @@ if __name__ == '__main__':
             texts = []
             for i in range(len(qids)):
                 q = batch_dataset['question'][i]
-                # batch_titles = batch_dataset['titles'][:args.n_contexts]
 
                 for t, ctx in zip(
                         batch_dataset['titles'][0][:args.n_contexts], 
@@ -85,15 +82,14 @@ if __name__ == '__main__':
                     -1, args.n_contexts * inputs['attention_mask'].size(-1)
             )
 
-            outputs = model.generate(
-                    **inputs, 
-                    max_length=args.max_length,
-                    num_beams=args.num_beams,
-                    do_sample=args.do_sample,
-                    top_k=args.top_k
-            ).detach().cpu()
+            outputs = model.generate(**inputs, 
+                                     max_length=args.max_length,
+                                     num_beams=args.num_beams,
+                                     do_sample=args.do_sample,
+                                     top_k=args.top_k).detach().cpu()
             predictions = tokenizer.batch_decode(
-                    outputs, skip_special_tokens=True
+                    outputs, 
+                    skip_special_tokens=True
             )
 
             for i, prediction in enumerate(predictions):

@@ -1,15 +1,13 @@
 python3 src/inference_fidcqg.py \
     --jsonl_file data/qrecc_provenances_bm25.jsonl \
-    --output_file evaluation/cqg/dev_${model}-${ckpt}-${version}_pred.jsonl \
-    --batch_size 4 \
+    --output_file predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl \
+    --collections ~/datasets/wiki.dump.20181220/wiki_psgs_w100.jsonl\
+    --batch_size 6 \
     --used_checkpoint checkpoints/fidcqg.bm25.ovl/checkpoint-4000 \
-    --used_tokenizer flan-t5-base \
-    --calculate_crossattention \
+    --used_tokenizer google/flan-t5-base \
+    --calculate_crossattention  \
     --n_contexts 10 \
+    --batch_size 8 \
     --max_length 64 \
-    --device cuda:2 \
-    --do_sample \
-    --top_k 10
-# python3 src/tools/convert_jsonl_to_txt.py \
-#     --path_jsonl evaluation/cqg/dev_${model}-${ckpt}-${version}_pred.jsonl \
-#     --path_txt evaluation/cqg/dev_${model}-${version}_pred.txt
+    --device cuda \
+    --num_beams 5
