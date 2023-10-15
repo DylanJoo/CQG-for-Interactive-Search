@@ -44,7 +44,7 @@ transformers
 datasets
 ```
 
-### 1 Construct SERP for ClariQ
+## 1 Data augmentation for FiDCQG with ClariQ
 ### 1-1 Build index
 Build the inverted index for wiki corpus using pyserini toolkit.
 For both sparse and dense retrieval, we used pyserini API and build the lucene/FAISS index.
@@ -75,6 +75,17 @@ python3 src/data_augmentation/retrieve_passages.py \
 ```
 You can also replace it with dense retreival.
 
+### 1-3 Construct provenances for ClariQ/prepare training data for FiDCQG
+There have many possible ways to construct the provenances.
+Here, we used the **overlapped** passages as provenances. (see section 4 as well)
+```
+python3 src/data_augmentation/handler.py \
+    --input data/clariq_provenances_bm25.jsonl \
+    --output data/fidcqg.train.bm25.ovl.jsonl \
+    --collections ${CORPUS} \
+    --topk 100 --N 10 --overlapped
+```
+
 ### 2 Fine-tune FiD-CQG
 Fine-tune the FiD-T5 model with synthetic ClariQ-SERP.
 I use the default training setups, you can also find more detail in `src/train_fidcqg.py` for detail.
@@ -98,9 +109,9 @@ python3 src/train_fidcqg.py \
     --remove_unused_columns false
 ```
 
-## Construct SERP for QReCC
+## 3 Data augmentation for FiDMRG with QReCC and FiDCQG
+### 3-1 Retrieve passages for QReCC (sparse)
 We first retrieved passage with standard query index, and question + answer as well.
-### 3-1 Retrieve passages for QReCC
 It will take a long time, we recommend you to download the pre-retrieved data.
 ```
 python3 src/data_augmentation/retrieve_passages.py \
@@ -111,10 +122,9 @@ python3 src/data_augmentation/retrieve_passages.py \
     --k 100
 ```
 
-### 3-2 Construct provenances (create training data) for ClariQ
+### 3-2 Construct provenances for ClariQ
 There have many possible ways to construct the provenances.
-Here, we used the **overlapped** passages as provenances. (see `handler.py` for detail)
-> NOTE: (1) Try TART's negative sampling methods (2) Try considering predicteed predicted clarifying question as well
+Here, we used the **overlapped** passages as provenances. (see section 4 as well)
 ```
 python3 src/data_augmentation/handler.py \
     --input data/clariq_provenances_bm25.jsonl \
@@ -142,12 +152,18 @@ python3 src/inference_fidcqg.py \
     --num_beams 5
 ```
 
-### 4 Construct provenances (create trianing data) for QRecc
-#### Collect the target of miresponse: answers and c_question
-Here we have tried different versions of training approaches.
-
+### 3-4 Construct provenance and training data for fidmrg
+There have many possible ways to construct the provenances.
+Here, we used the **overlapped** passages as provenances. (see section 4 as well)
+> NOTE: (1) Try TART's negative sampling methods (2) Try considering predicteed predicted clarifying question as well
 ```
-TBD
+PRED_CQ=predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl
+python3 src/data_augmentation/handler.py \
+    --input ${DATASET_DIR}/qrecc_provenances_bm25.jsonl \
+    --input_cqg_predictions ${PRED_CQ} \
+    --output ${DATASET_DIR}/fidmrg.train.bm25.ovl_cqpred.bm25.ovl.jsonl \
+    --collections ${CORPUS} \
+    --topk 100 --N 10 --overlapped
 ```
 
 ### 3-2 Fine-tune FiD-MRG

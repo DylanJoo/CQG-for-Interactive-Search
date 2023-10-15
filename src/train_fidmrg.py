@@ -1,23 +1,17 @@
 import random
 import sys
-from dataclasses import dataclass, field
-from typing import Optional
-
 from transformers import (
     AutoConfig,
     AutoTokenizer,
-    TrainingArguments,
     Trainer,
     HfArgumentParser,
     GenerationConfig
 )
-from transformers import T5ForConditionalGeneration
-from datasets import load_dataset
-from model import FiDT5
+from models import FiDT5
 from data import DataCollatorForMRG
-
-import os
-os.environ["WANDB_DISABLED"] = "true"
+from datasets import load_dataset
+from trainers import Trainer
+from arguments import *
 
 @dataclass
 class OurHFModelArguments:
@@ -76,53 +70,47 @@ class OurTrainingArguments(TrainingArguments):
 def main():
 
     ## Parseing argument for huggingface packages
-    parser = HfArgumentParser((OurHFModelArguments, OurModelArguments, OurDataArguments, OurTrainingArguments))
+    parser = HfArgumentParser((HFModelArgs, ModelArgs, DataArgs, TrainingArgs))
+
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         hfmodel_args, model_args, data_args, training_args = \
                 parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
-        hfmodel_args, model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+        hfmodel_args, model_args, data_args, training_args = \
+                parser.parse_args_into_dataclasses()
 
     ## additional config for models
     config = AutoConfig.from_pretrained(hfmodel_args.config_name)
     tokenizer = AutoTokenizer.from_pretrained(hfmodel_args.tokenizer_name)
-    t5 = T5ForConditionalGeneration.from_pretrained(hfmodel_args.model_name_or_path)
-    model = FiDT5(t5.config)
-    model.load_t5(t5.state_dict())
-    
-    ## [REMOVE] add generation config
-    # model.generation_config = generation_config
-    model.set_checkpoint(model_args.use_checkpoint)
+    model = FiDT5.from_pretrained(hfmodel_args.model_name_or_path)
 
     ## dataset 
-    from datasets import disable_caching
-    disable_caching()
-    dataset = load_dataset('json', data_files=data_args.train_file)
+    dataset = load_dataset('json', data_files=data_args.train_file,
+            keep_in_memory=True)
     N = len(dataset['train'])
-    if training_args.do_eval and data_args.eval_file is None:
-        dataset['eval'] = dataset['train'].select(
-                random.sample(range(N), 100)
-        )
-    else:
-        dataset['eval'] = load_dataset('json', data_files=data_args.eval_file)['train']
+    if training_args.do_eval:
+        dataset['dev'] = dataset['train'].select(random.sample(range(N), 100))
 
     ## data collator
     datacollator = DataCollatorForMRG(
             tokenizer=tokenizer, 
             padding=True,
-            max_length=data_args.max_length,
-            max_length_answer=data_args.max_length_answer,
+            max_src_length=data_args.max_src_length,
+            max_tgt_length=data_args.max_tgt_length,
             return_tensors='pt',
+            n_contexts=model_args.n_contexts,
             is_train=True,
-            n_contexts=model_args.n_contexts
+            random_sample=training_args.random_sample,
+            enumerated_sample=training_args.enumerated_sample,
     )
 
     ## Trainer
     trainer = Trainer(
             model=model, 
             args=training_args,
+            tokenizer=tokenizer,
             train_dataset=dataset['train'],
-            eval_dataset=dataset['eval'] if training_args.do_eval else None,
+            eval_dataset=dataset['dev'] if training_args.do_eval else None,
             data_collator=datacollator
     )
     

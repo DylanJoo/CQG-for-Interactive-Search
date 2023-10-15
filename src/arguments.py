@@ -50,3 +50,5 @@ class TrainingArgs(TrainingArguments):
     dataloader_pin_memory: bool = field(default=False)
     # Customized arguments
     remove_unused_columns: bool = field(default=False)
+    random_sample: bool = field(default=False)
+    enumerated_sample: bool = field(default=False)

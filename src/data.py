@@ -21,13 +21,13 @@ class DataCollatorBase:
     pad_to_multiple_of: Optional[int] = None
     return_tensors: str = "pt"
     padding: Union[bool, str] = True
+    max_src_length: Optional[int] = 512
+    max_tgt_length: Optional[int] = 64
 
 @dataclass
 class DataCollatorForCQG(DataCollatorBase):
     is_train: Union[bool, str] = False
     n_contexts: Union[int, str] = 1
-    max_src_length: Optional[int] = 512
-    max_tgt_length: Optional[int] = 64
     scorer: Union[TfidfTextScorer] = None
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -99,20 +99,11 @@ class DataCollatorForCQG(DataCollatorBase):
         return inputs
 
 @dataclass
-class DataCollatorForMRG:
-    tokenizer: Union[PreTrainedTokenizerBase] = None
-    padding: Union[bool, str, PaddingStrategy] = True
-    truncation: Union[bool, str] = True
-    max_length: Optional[int] = 512
-    max_length_answer: Optional[int] = 64
-    pad_to_multiple_of: Optional[int] = None
-    return_tensors: str = "pt"
-    padding: Union[bool, str] = True
-    # spec
+class DataCollatorForMRG(DataCollatorBase):
     is_train: Union[bool, str] = False
     n_contexts: Union[int, str] = 1
-    #[NOTE] Some corpus has no title.
-    # include_title: Union[bool, str] = False 
+    random_sample: Union[bool] = False
+    enumerated_sample: Union[bool] = False
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
 
@@ -121,36 +112,46 @@ class DataCollatorForMRG:
         texts = []
         for ex in features:
             q = ex['question']
-            for t, ctx in zip(ex['titles'][:self.n_contexts], ex['provenances'][:self.n_contexts]):
+            for t, ctx in zip(
+                    ex['titles'][:self.n_contexts], 
+                    ex['provenances'][:self.n_contexts]
+            ):
                 texts.append(f"question: {q} title: {t} context: {ctx}")
 
         inputs = self.tokenizer.batch_encode_plus(
                 texts, 
                 max_length=self.max_src_length,
-                padding=True,
+                padding=self.padding,
                 return_tensors=self.return_tensors,
-                truncation=True
+                truncation=self.truncation
         )
 
         ### adjustments
         inputs['input_ids'] = inputs['input_ids'].view(
-                -1, self.n_contexts, inputs.input_ids.size(-1)
+                -1, self.n_contexts, inputs['input_ids'].size(-1)
         )
         inputs['attention_mask'] = inputs['attention_mask'].view(
-                -1, self.n_contexts, inputs.attention_mask.size(-1)
+                -1, self.n_contexts * inputs['attention_mask'].size(-1)
         )
 
         ## labeling if needed.
-        # clarification: 28733, response: 1773
-        prefix = (lambda x: 'clarification' if x>0 else 'response')
         if self.is_train:
-            texts = [f"{prefix(ex['c_need'])}: {ex['mi_response']}" for ex in features]
+            if self.random_sample:
+                acts = random.choices(['clarify','answer'], k=len(features))
+                texts = [f"{act}: {ex['target'][act]}" \
+                        for act, ex in zip(acts, features)]
+            if self.enumerated_sample:
+                texts = [f"clarify: {ex['target']['clarify']}" \
+                        for act, ex in zip(acts, features)]
+                texts += [f"answer: {ex['target']['answer']}" \
+                        for act, ex in zip(acts, features)]
+
             targets = self.tokenizer.batch_encode_plus(
                     texts,
                     max_length=self.max_tgt_length,
-                    padding=True,
+                    padding=self.padding,
                     return_tensors=self.return_tensors,
-                    truncation=True,
+                    truncation=self.truncation,
             )
             target_ids = targets['input_ids']
             target_mask = targets['attention_mask'].bool()
@@ -160,7 +161,7 @@ class DataCollatorForMRG:
             inputs['decoder_attention_mask'] = target_mask
 
         else:
-            inputs['mi_response'] =  [ex['mi_response'] for ex in features]
+            inputs['target'] =  [ex['target'] for ex in features]
             inputs['question'] =  [ex['question'] for ex in features]
 
         return inputs

@@ -31,7 +31,8 @@ def main():
     model = FiDT5.from_pretrained(hfmodel_args.model_name_or_path)
 
     ## dataset 
-    dataset = load_dataset('json', data_files=data_args.train_file)
+    dataset = load_dataset('json', data_files=data_args.train_file,
+            keep_in_memory=True)
     N = len(dataset['train'])
     if training_args.do_eval:
         dataset['dev'] = dataset['train'].select(random.sample(range(N), 100))
