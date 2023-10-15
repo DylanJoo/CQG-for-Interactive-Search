@@ -18,4 +18,5 @@ python3 src/train_fidcqg.py \
     --learning_rate 1e-4 \
     --dataloader_num_workers 0 \
     --dataloader_pin_memory false \
-    --remove_unused_columns false
+    --remove_unused_columns false \
+    --report_to wandb

@@ -92,18 +92,22 @@ I use the default training setups, you can also find more detail in `src/train_f
 
 ```
 python3 src/train_fidcqg.py \
-    --model_name_or_path t5-base \
+    --model_name_or_path google/flan-t5-base \
+    --config_name google/flan-t5-base \
+    --tokenizer_name google/flan-t5-base \
     --n_contexts 10 \
-    --output_dir ./fidcqg \
-    --train_file data/fid.train.bm25.ovl.jsonl \ 
-    --per_device_train_batch_size 2 \
-    --per_device_eval_batch_size 2 \
-    --max_length 256 \
-    --max_steps 100 \
-    --save_steps 50\
-    --eval_steps 25 \
+    --output_dir checkpoints/fidcqg.bm25.ovl \
+    --train_file data/fidcqg.train.bm25.ovl.jsonl \
+    --per_device_train_batch_size 8 \
+    --per_device_eval_batch_size 8 \
+    --max_src_length 128 \
+    --max_tgt_length 64 \
+    --max_steps 4000 \
+    --save_steps 1000 \
+    --eval_steps 50 \
     --do_train true \
-    --do_eval false \
+    --do_eval true \
+    --learning_rate 1e-4 \
     --dataloader_num_workers 0 \
     --dataloader_pin_memory false \
     --remove_unused_columns false
@@ -122,20 +126,10 @@ python3 src/data_augmentation/retrieve_passages.py \
     --k 100
 ```
 
-### 3-2 Construct provenances for ClariQ
+
+### 3-2 Predict pseudo clarifying questions for QRecc
 There have many possible ways to construct the provenances.
-Here, we used the **overlapped** passages as provenances. (see section 4 as well)
-```
-python3 src/data_augmentation/handler.py \
-    --input data/clariq_provenances_bm25.jsonl \
-    --output data/fidcqg.train.bm25.ovl.jsonl \
-    --collections ${CORPUS} \
-    --topk 100 --N 10 --overlapped
-```
-
-### 3-3 Predict pseudo clarifying questions for QRecc
-We first use fine-tuned CQG to generate the clarifying questions for each QReCC questions and their retrieved passaage. 
-
+Here, we used the **standard** passages as provenances. (retrieve using query only)
 ```
 python3 src/inference_fidcqg.py \
     --jsonl_file data/qrecc_provenances_bm25.jsonl \
@@ -152,10 +146,12 @@ python3 src/inference_fidcqg.py \
     --num_beams 5
 ```
 
-### 3-4 Construct provenance and training data for fidmrg
+### 3-3 Construct provenance for QReCC/prepare training data for FiDMRG
 There have many possible ways to construct the provenances.
-Here, we used the **overlapped** passages as provenances. (see section 4 as well)
-> NOTE: (1) Try TART's negative sampling methods (2) Try considering predicteed predicted clarifying question as well
+Here, we used the **standard** passages as provenances. (retrieve using query only)
+> NOTE: try TART's negative sampling methods 
+> NOTE: try considering predicteed predicted clarifying question as well
+
 ```
 PRED_CQ=predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl
 python3 src/data_augmentation/handler.py \
@@ -166,7 +162,28 @@ python3 src/data_augmentation/handler.py \
     --topk 100 --N 10 --overlapped
 ```
 
-### 3-2 Fine-tune FiD-MRG
+### 4 Fine-tune FiD-MRG
 ```
-TBD
+python3 src/train_fidmrg.py \
+    --model_name_or_path google/flan-t5-base \
+    --config_name google/flan-t5-base \
+    --tokenizer_name google/flan-t5-base \
+    --n_contexts 10 \
+    --output_dir checkpoints/fidmrg.bm25.ovl_dual_input \
+    --train_file data/fidmrg.train.bm25.ovl_cqpred.bm25.ovl.jsonl \
+    --random_sample true \
+    --per_device_train_batch_size 8 \
+    --per_device_eval_batch_size 8 \
+    --max_src_length 128 \
+    --max_tgt_length 64 \
+    --max_steps 10000 \
+    --save_steps 5000 \
+    --eval_steps 500 \
+    --do_train true \
+    --do_eval true \
+    --learning_rate 1e-4 \
+    --dataloader_num_workers 0 \
+    --dataloader_pin_memory false \
+    --remove_unused_columns false \
+    --report_to wandb
 ```

@@ -87,8 +87,8 @@ retrieve_serp_qrecc_contriever:
 	    --index_dir ${INDEX_DIR} \
 	    --k 100 
 
-# 3-3
-## use q_serp instead of  ref_serp. 
+# 3-2
+## use q_serp instead of ref_serp. 
 ## Other type of SERP should prbbly be considered.
 predict_provenances_qrecc: 
 	python3 src/inference_fidcqg.py \
@@ -105,7 +105,7 @@ predict_provenances_qrecc:
 	    --device cuda \
 	    --num_beams 5
 
-# 3-4
+# 3-3
 PRED_CQ=predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl
 construct_provenances_qrecc:
 	# overlapped
