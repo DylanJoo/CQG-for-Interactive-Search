@@ -2,9 +2,9 @@
 
 The reproduction pipeline includes these procedures
 
-1. Construct SERP of ClariQ. (data_augmentation)
+1. Data augmentation for FiDCQG (indexing, retrieval, sampling, ...)
 2. Fine-tune FiD-CQG model.
-3. Generate (inference) the retrieval-enhanced CQ. (data_augmentation)
+3. Data augmentation for FiDMRG (retrieval, inferencing cq, sapling, ...)
 4. Fine-tune FiD-MRG model.
 
 ---
