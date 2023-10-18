@@ -13,60 +13,6 @@ from datasets import load_dataset
 from trainers import Trainer
 from arguments import *
 
-@dataclass
-class OurHFModelArguments:
-    # Huggingface's original arguments
-    model_name_or_path: Optional[str] = field(default='t5-base')
-    config_name: Optional[str] = field(default='t5-base')
-    tokenizer_name: Optional[str] = field(default='t5-base')
-    cache_dir: Optional[str] = field(default=None)
-    use_fast_tokenizer: bool = field(default=True)
-    model_revision: str = field(default="main")
-    use_auth_token: bool = field(default=False)
-
-@dataclass
-class OurModelArguments:
-    use_checkpoint: bool = field(default=False, metadata={
-        "help": "use checkpoint in the encoder."
-    })
-    n_contexts: Optional[int] = field(default=3, metadata={
-        "help": "the considered context (title and passage)", 
-    })
-
-@dataclass
-class OurDataArguments:
-    # Huggingface's original arguments. 
-    dataset_config_name: Optional[str] = field(default=None)
-    overwrite_cache: bool = field(default=False)
-    validation_split_percentage: Optional[int] = field(default=0)
-    preprocessing_num_workers: Optional[int] = field(default=None)
-    # Customized arguments
-    train_file: Optional[str] = field(default='data/train_fidmrg_v0.sample.jsonl')
-    eval_file: Optional[str] = field(default=None)
-    max_length: int = field(default=256)
-    max_length_answer: int = field(default=64)
-
-@dataclass
-class OurTrainingArguments(TrainingArguments):
-    # Huggingface's original arguments. 
-    output_dir: str = field(default='./fidmrg')
-    seed: int = field(default=42)
-    data_seed: int = field(default=None)
-    do_train: bool = field(default=False)
-    do_eval: bool = field(default=False)
-    max_steps: int = field(default=10000)
-    save_steps: int = field(default=5000)
-    eval_steps: int = field(default=2500)
-    evaluation_strategy: Optional[str] = field(default='no')
-    per_device_train_batch_size: int = field(default=2)
-    per_device_eval_batch_size: int = field(default=2)
-    logging_dir: Optional[str] = field(default='./logs')
-    resume_from_checkpoint: Optional[str] = field(default=None)
-    dataloader_num_workers: int = field(default=0)
-    dataloader_pin_memory: bool = field(default=False)
-    # Customized arguments
-    remove_unused_columns: bool = field(default=False)
-
 def main():
 
     ## Parseing argument for huggingface packages

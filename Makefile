@@ -107,11 +107,12 @@ predict_provenances_qrecc:
 
 # 3-3
 PRED_CQ=predictions/qrecc_cq_pred.fidcqg.bm25.ovl.jsonl
+PRED_CQ=predictions/qrecc_cq_pred.fidcqg-w.bm25.ovl.jsonl
 construct_provenances_qrecc:
 	# overlapped
 	python3 src/data_augmentation/handler.py \
 	    --input ${DATASET_DIR}/qrecc_provenances_bm25.jsonl \
 	    --input_cqg_predictions ${PRED_CQ} \
-	    --output ${DATASET_DIR}/fidmrg.train.bm25.ovl_cqpred.bm25.ovl.jsonl \
+	    --output ${DATASET_DIR}/fidmrg.train.bm25.w.ovl_cqpred.bm25.ovl.jsonl \
 	    --collections ${CORPUS} \
 	    --topk 100 --N 10 --overlapped

@@ -118,6 +118,9 @@ class DataCollatorForMRG(DataCollatorBase):
             ):
                 texts.append(f"question: {q} title: {t} context: {ctx}")
 
+        if self.enumerated_sample:
+            texts = texts * 2
+
         inputs = self.tokenizer.batch_encode_plus(
                 texts, 
                 max_length=self.max_src_length,
@@ -136,15 +139,18 @@ class DataCollatorForMRG(DataCollatorBase):
 
         ## labeling if needed.
         if self.is_train:
+            # random sampling either of them
             if self.random_sample:
                 acts = random.choices(['clarify','answer'], k=len(features))
                 texts = [f"{act}: {ex['target'][act]}" \
                         for act, ex in zip(acts, features)]
+
+            # enumerated sampling both of them; [c1, c2, ..] * 2
             if self.enumerated_sample:
                 texts = [f"clarify: {ex['target']['clarify']}" \
-                        for act, ex in zip(acts, features)]
+                        for ex in features]
                 texts += [f"answer: {ex['target']['answer']}" \
-                        for act, ex in zip(acts, features)]
+                        for ex in features]
 
             targets = self.tokenizer.batch_encode_plus(
                     texts,
