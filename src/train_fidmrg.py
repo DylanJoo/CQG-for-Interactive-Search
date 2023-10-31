@@ -48,6 +48,7 @@ def main():
             is_train=True,
             random_sample=training_args.random_sample,
             enumerated_sample=training_args.enumerated_sample,
+            answer_sample=training_args.answer_sample,
     )
 
     ## Trainer

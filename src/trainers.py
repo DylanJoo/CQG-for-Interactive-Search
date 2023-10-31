@@ -13,7 +13,7 @@ class Trainer(Trainer):
         outputs = model(**inputs, decoder_input_ids=decoder_input_ids)
         lm_logits = outputs.logits
 
-        ## [REVISE] NLL Loss (weighted)
+        ## [REVISE] Token-level (mean) NLL Loss (weighted) 
         if label_weights is not None:
             loss_fct = CrossEntropyLoss(ignore_index=-100, reduction='none')
             labels = labels.to(lm_logits.device)
@@ -23,7 +23,8 @@ class Trainer(Trainer):
                     labels.view(-1)
             )
             outputs['loss'] = (loss * label_weights.view(-1)).mean()
-        # NLL loss (mean)
+
+        # Sequence-level (average summmation) NLL loss (mean)
         else:
             loss_fct = CrossEntropyLoss(ignore_index=-100, reduction='none')
             labels = labels.to(lm_logits.device)

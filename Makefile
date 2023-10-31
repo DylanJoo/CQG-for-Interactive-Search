@@ -1,3 +1,4 @@
+INDEX_DIR=/home/jhju/indexes/wikipedia-lucene
 CORPUS_DIR=~/datasets/wiki.dump.20181220/
 CORPUS=${CORPUS_DIR}/wiki_psgs_w100.jsonl
 DATASET_DIR=/home/jhju/huggingface_hub/CQG/
@@ -19,7 +20,7 @@ index_wiki_corpus_bm25:
 	python3 -m pyserini.index.lucene \
 	  --collection JsonCollection \
 	  --input ${CORPUS_DIR} \
-	  --index ${INDEX_DIR} \
+	  --index /home/jhju/indexes/wikipedia-lucene \
 	  --generator DefaultLuceneDocumentGenerator \
 	  --fields title \
 	  --threads 8
@@ -30,7 +31,7 @@ retrieve_serp_clariq_bm25:
 	    --clariq data/clariq/train.tsv \
 	    --output data/clariq_provenances_bm25.jsonl \
 	    --k1 0.9 --b 0.4 \
-	    --index_dir ${INDEX_DIR} \
+	    --index_dir /home/jhju/indexes/wikipedia-lucene \
 	    --k 100
 
 # 1-2 (dense)
@@ -43,7 +44,7 @@ retrieve_serp_clariq_contriever:
 	    --device cuda:2 \
 	    --batch_size 32 \
 	    --threads 4 \
-	    --index_dir ${INDEX_DIR} \
+	    --index_dir /home/jhju/indexes/wikipedia-contriever \
 	    --k 100 
 
 # 1-3
@@ -72,7 +73,7 @@ retrieve_serp_qrecc_bm25:
 	    --qrecc data/qrecc/qrecc_train.json \
 	    --output ${DATASET_DIR}/qrecc_provenances_bm25.jsonl \
 	    --k1 0.9 --b 0.4 \
-	    --index_dir ${INDEX_DIR} \
+	    --index_dir /home/jhju/indexes/wikipedia-lucene \
 	    --k 100
 
 retrieve_serp_qrecc_contriever:
@@ -84,7 +85,7 @@ retrieve_serp_qrecc_contriever:
 	    --device cuda:2 \
 	    --batch_size 54 \
 	    --threads 4 \
-	    --index_dir ${INDEX_DIR} \
+	    --index_dir /home/jhju/indexes/wikipedia-contriever \
 	    --k 100 
 
 # 3-2

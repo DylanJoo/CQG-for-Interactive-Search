@@ -52,3 +52,4 @@ class TrainingArgs(TrainingArguments):
     remove_unused_columns: bool = field(default=False)
     random_sample: bool = field(default=False)
     enumerated_sample: bool = field(default=False)
+    answer_sample: bool = field(default=False)

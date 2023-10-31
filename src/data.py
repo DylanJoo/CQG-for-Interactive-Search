@@ -104,6 +104,7 @@ class DataCollatorForMRG(DataCollatorBase):
     n_contexts: Union[int, str] = 1
     random_sample: Union[bool] = False
     enumerated_sample: Union[bool] = False
+    answer_sample: Union[bool] = False
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, Any]:
 
@@ -137,18 +138,24 @@ class DataCollatorForMRG(DataCollatorBase):
                 -1, self.n_contexts * inputs['attention_mask'].size(-1)
         )
 
+        texts = []
         ## labeling if needed.
         if self.is_train:
             # random sampling either of them
             if self.random_sample:
                 acts = random.choices(['clarify','answer'], k=len(features))
-                texts = [f"{act}: {ex['target'][act]}" \
+                texts += [f"{act}: {ex['target'][act]}" \
                         for act, ex in zip(acts, features)]
 
             # enumerated sampling both of them; [c1, c2, ..] * 2
             if self.enumerated_sample:
-                texts = [f"clarify: {ex['target']['clarify']}" \
+                texts += [f"clarify: {ex['target']['clarify']}" \
                         for ex in features]
+                texts += [f"answer: {ex['target']['answer']}" \
+                        for ex in features]
+
+            # answer sampling with only convQA setting
+            if self.answer_sample:
                 texts += [f"answer: {ex['target']['answer']}" \
                         for ex in features]
 
