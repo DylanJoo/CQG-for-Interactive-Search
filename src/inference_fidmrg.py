@@ -113,7 +113,7 @@ if __name__ == '__main__':
                 if 'clarify' in prediction:
                     c_question = prediction.replace('clarify:', '').strip()
                 elif 'answer' in prediction:
-                    answer = prediction.replace('clarify:', '').strip()
+                    answer = prediction.replace('answer:', '').strip()
                 else:
                     print('This instance has no `clarify` or `answer`')
                     print('-->', response)
@@ -125,7 +125,8 @@ if __name__ == '__main__':
                     "question": batch_dataset['question'][i],
                     "answer": batch_dataset['answer'][i],
                     "response": {
-                        "c_question": c_question, "answer": answer,
+                        "c_question": c_question, 
+                        "answer": answer,
                         "prob_c_question": clarify_prob[i], 
                         "prob_answer": answer_prob[i],
                     },
