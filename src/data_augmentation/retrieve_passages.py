@@ -58,7 +58,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # data args
     parser.add_argument("--clariq", type=str, default=None)
-    parser.add_argument("--qrecc", type=str, default=None)
+    parser.add_argument("--convqa", type=str, default=None)
     parser.add_argument("--output", default='sample.jsonl', type=str)
     # search args
     parser.add_argument("--index_dir", type=str)
@@ -99,14 +99,18 @@ if __name__ == '__main__':
             }, ensure_ascii=False)+'\n')
         fout.close()
 
-    if args.qrecc:
-        dataset = loader.qrecc(args.qrecc)
+    if args.convqa:
+        if 'qrecc' in args.convqa:
+            dataset = loader.qrecc(args.convqa)
+        if 'topiocqa' in args.convqa:
+            # In Topiocqa, it contains the 'rationale' for gold passage searching.
+            dataset = loader.topiocqa(args.convqa, reference_key='rationale')
 
         # pool queries for search
         queries = np.unique(dataset['question']).tolist()
         print(f"Amount of queries (request): {len(queries)}")
         queries += np.unique(dataset['q_and_a']).tolist()
-        print(f"Amount of queries (request and request+qrecc): {len(queries)}")
+        print(f"Amount of queries (request and request+answer): {len(queries)}")
 
         # SERP for qrecc dataset
         if args.dense_retrieval:
@@ -116,12 +120,12 @@ if __name__ == '__main__':
 
         # Add SERP to qrecc dataset
         fout = open(args.output, 'w') 
-        for qrecc_dict in dataset:
+        for convqa_dict in dataset:
             fout.write(json.dumps({
-                "id": qrecc_dict['id'],
-                "question": qrecc_dict['question'],
-                "answer": qrecc_dict['answer'],
-                "q_serp": serp[qrecc_dict['question']],
-                "ref_serp": serp[qrecc_dict['q_and_a']],
+                "id": convqa_dict['id'],
+                "question": convqa_dict['question'],
+                "answer": convqa_dict['answer'],
+                "q_serp": serp[convqa_dict['question']],
+                "ref_serp": serp[convqa_dict['q_and_a']],
             }, ensure_ascii=False)+'\n')
         fout.close()

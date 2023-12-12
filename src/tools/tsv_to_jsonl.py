@@ -16,7 +16,8 @@ def convert(args):
             if args.add_title:
                 fout.write(json.dumps({
                     "id": int(id_),
-                    "contents": f"{title_topic} {text}"
+                    "contents": f"{title_topic} {text}",
+                    "title": title_topic
                 }, ensure_ascii=False)+'\n')
             else:
                 fout.write(json.dumps({

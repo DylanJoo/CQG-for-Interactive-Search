@@ -4,12 +4,12 @@ DATASET_DIR=/home/jhju/huggingface_hub/CQG/
 
 # 3-1
 # retrieve_serp_qrecc_bm25:
-# python3 src/data_augmentation/retrieve_passages.py \
-#     --qrecc data/qrecc/qrecc_test.json \
-#     --output ${DATASET_DIR}/qrecc_test_provenances_bm25.jsonl \
-#     --k1 0.9 --b 0.4 \
-#     --index_dir /home/jhju/indexes/wikipedia-lucene \
-#     --k 100
+python3 src/data_augmentation/retrieve_passages.py \
+    --qrecc data/qrecc/qrecc_test.json \
+    --output ${DATASET_DIR}/qrecc_test_provenances_bm25.jsonl \
+    --k1 0.9 --b 0.4 \
+    --index_dir /home/jhju/indexes/wikipedia-lucene \
+    --k 100
 
 # retrieve_serp_qrecc_contriever:
 python3 src/data_augmentation/retrieve_passages.py \

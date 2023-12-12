@@ -10,10 +10,7 @@ wandb/
 data/*.jsonl
 
 # data
-data/archived/*
-data/*jsonl
-!data/train_cqg_v0.sample.train.jsonl
-!data/train_cqg_v0.sample.eval.jsonl
+# ALL softlink to cfda4
 
 # checkpoints
 checkpoints/

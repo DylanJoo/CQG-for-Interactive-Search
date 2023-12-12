@@ -18,6 +18,7 @@ def clariq(path):
     return clariq
 
 def qrecc(path):
+
     qrecc = load_dataset('json', data_files=path)['train']
     qrecc = qrecc.rename_column('Question', 'utterance')
     qrecc = qrecc.rename_column('Rewrite', 'question')
@@ -31,6 +32,25 @@ def qrecc(path):
             {"q_and_a": f"{ex['question']} {ex['answer']}"}
     )
     return qrecc
+
+def topiocqa(path, reference_key='answer'):
+    """ Here we use the utterance as question.  
+    the key should be something related to gold passages (Rationale)
+    """
+    topiocqa = load_dataset('json', data_files=path)['train']
+    topiocqa = topiocqa.rename_column('Question', 'question')
+    # topiocqa = topiocqa.rename_column('Rewrite', 'question')
+    topiocqa = topiocqa.rename_column('Answer', 'answer')
+    topiocqa = topiocqa.rename_column('Rationale', 'rationale')
+    topiocqa = topiocqa.map(lambda ex: 
+            {"id": f"{ex['Conversation_no']}_{ex['Turn_no']}"}
+    )
+    ### Here, use rewritten question as query
+    ### [NOTE] For dense retrieval, it's possible to use Conv query
+    topiocqa = topiocqa.map(lambda ex: 
+            {"q_and_a": f"{ex['question']} {ex[reference_key]}"}
+    )
+    return topiocqa
 
 def load_collections(path, title=False, full=True):
     def normalize(text):

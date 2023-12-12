@@ -33,8 +33,10 @@ if __name__ == '__main__':
         for line in tqdm(fin):
             data = json.loads(line.strip())
             # [NOTE] the diverse set of serp should be considered
-            serp = data.pop('q_serp')[0][:args.top_k] 
-            _ = data.pop('ref_serp')
+            if 'qrecc' in args.jsonl_file:
+                serp = data.pop('q_serp')[0][:args.top_k] 
+            else:
+                serp = data.pop('ref_serp')[0][:args.top_k] 
 
             data.update({
                 "titles": [titles[docid] for docid in serp],
